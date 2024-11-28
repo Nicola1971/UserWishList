@@ -6,9 +6,9 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.7
+ * @version   1.8
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 11:20
+ * @lastupdate 28-11-2024 12:20
  */
 
 // Verifica e imposta i parametri
@@ -19,16 +19,42 @@ $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-success';
 $btnAddText = isset($btnAddText) ? $btnAddText : 'Aggiungi a WishList';
 $btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : 'Già in WishList';
+$ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
+$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : '<p class="text-muted">Effettua il login per aggiungere alla WishList</p>';
 
-// Verifica WishList
-$isInWishlist = false;
+// Verifica se l'utente è loggato
+if (!$EVOuserId || !$docid) {
+    // Utente non loggato
+    if ($ShowToNotLogged) {
+        if (substr($ToNotLoggedTpl, 0, 1) === '@') {
+            $chunkName = substr($ToNotLoggedTpl, 1);
+            return $modx->getChunk($chunkName);
+        }
+        return $ToNotLoggedTpl;
+    }
+    return '';
+}
+
 try {
+    // Otteniamo i valori correnti dell'utente
     $tvValues = \UserManager::getValues(['id' => $userId]);
+    
+    // Verifica WishList
     $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
     $wishListIds = $userWishList ? explode(',', $userWishList) : [];
     $isInWishlist = in_array($docid, $wishListIds);
+    
 } catch (\Exception $e) {
     $isInWishlist = false;
+    // In caso di errore, mostra il messaggio per utenti non loggati
+    if ($ShowToNotLogged) {
+        if (substr($ToNotLoggedTpl, 0, 1) === '@') {
+            $chunkName = substr($ToNotLoggedTpl, 1);
+            return $modx->getChunk($chunkName);
+        }
+        return $ToNotLoggedTpl;
+    }
+    return '';
 }
 
 // Button HTML
@@ -61,7 +87,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
             if (button.disabled) return;
             
             try {
-                const response = await fetch("/assets/snippets/UserWishList/ajax_handler.php", {
+                const response = await fetch("/assets/snippets/AddToWishList/ajax_handler.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
