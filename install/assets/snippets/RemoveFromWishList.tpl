@@ -1,14 +1,14 @@
 <?php
 /**
- * AddToWishList
+ * RemoveFromWishList
  *
- * Add To WishList
+ * Remove From WishList
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.7
+ * @version   1.6
  * @internal  @modx_category Users
- * @lastupdate 28-11-2024 11:20
+ * @lastupdate 28-11-2024 10:20
  */
 
 // Verifica e imposta i parametri
@@ -16,9 +16,9 @@ $docid = (isset($docid) && (int)$docid > 0) ? (int)$docid : $modx->documentIdent
 $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
-$btnClass = isset($btnClass) ? $btnClass : 'btn btn-success';
-$btnAddText = isset($btnAddText) ? $btnAddText : 'Aggiungi a WishList';
-$btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : 'Già in WishList';
+$btnClass = isset($btnClass) ? $btnClass : 'btn btn-danger';
+$btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : 'Rimuovi dalla WishList';
+$btnNotInText = isset($btnNotInText) ? $btnNotInText : 'Non in WishList';
 
 // Verifica WishList
 $isInWishlist = false;
@@ -32,42 +32,40 @@ try {
 }
 
 // Button HTML
-$buttonText = $isInWishlist ? $btnAlreadyText : $btnAddText;
-$buttonDisabled = $isInWishlist ? 'disabled' : '';
+$buttonText = $isInWishlist ? $btnRemoveText : $btnNotInText;
+$buttonDisabled = !$isInWishlist ? 'disabled' : '';
 
 $output = "
 <button type=\"button\" 
-    class=\"add-to-wishlist $btnClass\" 
+    class=\"remove-from-wishlist $btnClass\" 
     data-docid=\"$docid\" 
     data-userid=\"$userId\" 
-    data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
-    data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
-    id=\"wishlist-button-$docid\"
+    id=\"wishlist-remove-button-$docid\"
     $buttonDisabled>
     $buttonText
 </button>
 ";
 
 // JavaScript (una volta sola)
-if (!defined('WISHLIST_SCRIPT_LOADED')) {
-    define('WISHLIST_SCRIPT_LOADED', true);
+if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
+    define('REMOVE_WISHLIST_SCRIPT_LOADED', true);
     
     $scriptoutput = '
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        async function addToWishlist(button) {
+        async function removeFromWishlist(button) {
             if (button.disabled) return;
             
             try {
-                const response = await fetch("/assets/snippets/UserWishList/ajax_handler.php", {
+                const response = await fetch("/assets/snippets/RemoveFromWishList/ajax_handler.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
                     },
                     body: new URLSearchParams({
-                        add_to_wishlist: 1,
+                        remove_from_wishlist: 1,
                         docid: button.dataset.docid,
                         userId: button.dataset.userid
                     })
@@ -76,10 +74,17 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                 const data = await response.json();
                 
                 if (data.success) {
-                    const targetButton = document.getElementById("wishlist-button-" + data.docid);
+                    const targetButton = document.getElementById("wishlist-remove-button-" + data.docid);
                     if (targetButton) {
                         targetButton.disabled = true;
-                        targetButton.innerHTML = targetButton.dataset.alreadyText;
+                        targetButton.textContent = "' . $btnNotInText . '";
+                    }
+                    
+                    // Se esiste il bottone di aggiunta, lo riabilitiamo
+                    const addButton = document.getElementById("wishlist-button-" + data.docid);
+                    if (addButton) {
+                        addButton.disabled = false;
+                        addButton.textContent = "Aggiungi a WishList";
                     }
                     
                     Toastify({
@@ -93,7 +98,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                     }).showToast();
                 } else {
                     Toastify({
-                        text: data.message || "Errore durante l\'aggiunta",
+                        text: data.message || "Errore durante la rimozione",
                         duration: 3000,
                         gravity: "bottom",
                         position: "left",
@@ -116,9 +121,9 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
             }
         }
 
-        document.querySelectorAll(".add-to-wishlist").forEach(button => {
+        document.querySelectorAll(".remove-from-wishlist").forEach(button => {
             button.addEventListener("click", function() {
-                addToWishlist(this);
+                removeFromWishlist(this);
             });
         });
     });
