@@ -6,9 +6,9 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.6
- * @internal  @modx_category Users
- * @lastupdate 28-11-2024 10:20
+ * @version   1.7
+ * @internal  @modx_category UserWishList
+ * @lastupdate 28-11-2024 11:30
  */
 
 // Verifica e imposta i parametri
@@ -40,6 +40,8 @@ $output = "
     class=\"remove-from-wishlist $btnClass\" 
     data-docid=\"$docid\" 
     data-userid=\"$userId\" 
+    data-remove-text='" . htmlspecialchars($btnRemoveText, ENT_QUOTES) . "'
+    data-not-in-text='" . htmlspecialchars($btnNotInText, ENT_QUOTES) . "'
     id=\"wishlist-remove-button-$docid\"
     $buttonDisabled>
     $buttonText
@@ -77,14 +79,15 @@ if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
                     const targetButton = document.getElementById("wishlist-remove-button-" + data.docid);
                     if (targetButton) {
                         targetButton.disabled = true;
-                        targetButton.textContent = "' . $btnNotInText . '";
+                        targetButton.innerHTML = targetButton.dataset.notInText;
                     }
                     
                     // Se esiste il bottone di aggiunta, lo riabilitiamo
                     const addButton = document.getElementById("wishlist-button-" + data.docid);
                     if (addButton) {
                         addButton.disabled = false;
-                        addButton.textContent = "Aggiungi a WishList";
+                        // Usa il testo salvato nel data attribute se disponibile
+                        addButton.innerHTML = addButton.dataset.addText || "Aggiungi a WishList";
                     }
                     
                     Toastify({
