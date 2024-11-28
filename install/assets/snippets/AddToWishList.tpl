@@ -6,9 +6,9 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.8
+ * @version   1.9
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 12:20
+ * @lastupdate 28-11-2024 13:20
  */
 
 // Verifica e imposta i parametri
@@ -19,6 +19,8 @@ $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-success';
 $btnAddText = isset($btnAddText) ? $btnAddText : 'Aggiungi a WishList';
 $btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : 'Già in WishList';
+$btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : 'Aggiungi alla lista dei desideri';
+$btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : 'Elemento già presente nella lista dei desideri';
 $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
 $ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : '<p class="text-muted">Effettua il login per aggiungere alla WishList</p>';
 
@@ -59,6 +61,7 @@ try {
 
 // Button HTML
 $buttonText = $isInWishlist ? $btnAlreadyText : $btnAddText;
+$buttonAlt = $isInWishlist ? $btnAlreadyAlt : $btnAddAlt;
 $buttonDisabled = $isInWishlist ? 'disabled' : '';
 
 $output = "
@@ -68,6 +71,10 @@ $output = "
     data-userid=\"$userId\" 
     data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
     data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
+    data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
+    data-already-alt='" . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . "'
+    title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
+    aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
     id=\"wishlist-button-$docid\"
     $buttonDisabled>
     $buttonText
@@ -106,6 +113,8 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                     if (targetButton) {
                         targetButton.disabled = true;
                         targetButton.innerHTML = targetButton.dataset.alreadyText;
+                        targetButton.title = targetButton.dataset.alreadyAlt;
+                        targetButton.setAttribute("aria-label", targetButton.dataset.alreadyAlt);
                     }
                     
                     Toastify({
