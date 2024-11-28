@@ -8,7 +8,7 @@
  * @category  snippet
  * @version   2.0
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 17:30
+ * @lastupdate 28-11-2024 13:20
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/AddToWishList/functions.php';
@@ -26,7 +26,7 @@ $btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : 'Elemento già present
 $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
 $ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : '<p class="text-muted">Effettua il login per aggiungere alla WishList</p>';
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
-$counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-counter ms-2">([+count+])</span>';
+$counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">([+count+])</span>';
 
 // Verifica se l'utente è loggato
 if (!$EVOuserId || !$docid) {
@@ -51,19 +51,30 @@ try {
     $isInWishlist = in_array($docid, $wishListIds);
     
     // Ottieni il conteggio totale
-    $totalCount = getUserWishlistProductCount($docid, $userTv);
+    $totalCount = count($wishListIds);
     
     // Set placeholders per il conteggio
     $modx->setPlaceholder('wishlist_count', $totalCount);
-    $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+count+]', $totalCount, $counterTpl));
+    $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $docid, str_replace('[+count+]', $totalCount, $counterTpl)));
     
 } catch (\Exception $e) {
     $isInWishlist = false;
     $totalCount = 0;
     $modx->setPlaceholder('wishlist_count', 0);
-    $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+count+]', 0, $counterTpl));
+    $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $docid, str_replace('[+count+]', 0, $counterTpl)));
     
-    // ... (resto del codice del catch invariato) ...
+} catch (\Exception $e) {
+    $isInWishlist = false;
+    $totalCount = 0;
+    // In caso di errore, mostra il messaggio per utenti non loggati
+    if ($ShowToNotLogged) {
+        if (substr($ToNotLoggedTpl, 0, 1) === '@') {
+            $chunkName = substr($ToNotLoggedTpl, 1);
+            return $modx->getChunk($chunkName);
+        }
+        return $ToNotLoggedTpl;
+    }
+    return '';
 }
 
 // Button HTML
@@ -114,8 +125,8 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                 
                 const data = await response.json();
                 if (data.success) {
-                    // Aggiorna tutti i contatori con la stessa classe
-                    document.querySelectorAll(".wishlist-count-" + data.docid).forEach(counter => {
+                    const containers = document.querySelectorAll(".wishlist-count-" + data.docid);
+                    containers.forEach(counter => {
                         counter.textContent = data.count;
                     });
                 }
@@ -124,7 +135,75 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
             }
         }
 
-        // ... (resto del JavaScript invariato) ...
+        async function addToWishlist(button) {
+            if (button.disabled) return;
+            
+            try {
+                const response = await fetch("/assets/snippets/AddToWishList/ajax_handler.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                        add_to_wishlist: 1,
+                        docid: button.dataset.docid,
+                        userId: button.dataset.userid
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const targetButton = document.getElementById("wishlist-button-" + data.docid);
+                    if (targetButton) {
+                        targetButton.disabled = true;
+                        targetButton.innerHTML = targetButton.dataset.alreadyText;
+                        targetButton.title = targetButton.dataset.alreadyAlt;
+                        targetButton.setAttribute("aria-label", targetButton.dataset.alreadyAlt);
+                    }
+                    
+                    // Aggiorna il contatore
+                    updateWishlistCount(data.docid);
+                    
+                    Toastify({
+                        text: data.message,
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "left",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                } else {
+                    Toastify({
+                        text: data.message || "Errore durante l\'aggiunta",
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "left",
+                        style: {
+                            background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        }
+                    }).showToast();
+                }
+            } catch (error) {
+                console.error("Errore:", error);
+                Toastify({
+                    text: "Errore durante l\'operazione",
+                    duration: 3000,
+                    gravity: "bottom",
+                    position: "left",
+                    style: {
+                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    }
+                }).showToast();
+            }
+        }
+
+        document.querySelectorAll(".add-to-wishlist").forEach(button => {
+            button.addEventListener("click", function() {
+                addToWishlist(this);
+            });
+        });
     });
     </script>';
 
