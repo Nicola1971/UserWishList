@@ -7,7 +7,7 @@
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
  * @version   1.6
- * @internal  @modx_category Users
+ * @internal  @modx_category UserWishList
  * @lastupdate 28-11-2024 10:20
  */
 
