@@ -6,9 +6,9 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.0
+ * @version   2.1
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 13:20
+ * @lastupdate 28-11-2024 20:45
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/AddToWishList/functions.php';
@@ -27,6 +27,13 @@ $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
 $ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : '<p class="text-muted">Effettua il login per aggiungere alla WishList</p>';
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
 $counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">([+count+])</span>';
+
+// Ottieni il numero di utenti che hanno il prodotto nella loro wishlist
+$totalUsers = getUserWishlistProductCount($docid, $userTv);
+
+// Set placeholders per il conteggio
+$modx->setPlaceholder('wishlist_count', $totalUsers);
+$modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $docid, str_replace('[+count+]', $totalUsers, $counterTpl)));
 
 // Verifica se l'utente è loggato
 if (!$EVOuserId || !$docid) {
@@ -76,7 +83,6 @@ try {
     }
     return '';
 }
-
 // Button HTML
 $buttonText = $isInWishlist ? $btnAlreadyText : $btnAddText;
 $buttonAlt = $isInWishlist ? $btnAlreadyAlt : $btnAddAlt;
