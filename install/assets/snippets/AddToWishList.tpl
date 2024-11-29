@@ -6,12 +6,12 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.2
+ * @version   2.4
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 21:15
+ * @lastupdate 29-11-2024 11:55
  */
 
-require_once MODX_BASE_PATH . 'assets/snippets/AddToWishList/functions.php';
+require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
 
 // Verifica e imposta i parametri
 $docid = (isset($docid) && (int)$docid > 0) ? (int)$docid : $modx->documentIdentifier;
@@ -40,15 +40,17 @@ $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $doci
 if (!$EVOuserId || !$docid) {
     // Utente non loggato
     if ($ShowToNotLogged) {
+        // Se vogliamo mostrare il bottone anche agli utenti non loggati
         if (substr($ToNotLoggedTpl, 0, 1) === '@') {
             $chunkName = substr($ToNotLoggedTpl, 1);
             return $modx->getChunk($chunkName);
         }
-        return $ToNotLoggedTpl;
+        $buttonText = $btnAddText;
+        $buttonAlt = $btnNotLoggedAlt; // Usiamo il testo specifico per non loggati
+        $buttonDisabled = 'disabled';
+    } else {
+        return ''; // Non mostrare nulla se ShowToNotLogged è 0
     }
-    $buttonText = $ShowToNotLogged ? $btnAddText : '';
-    $buttonAlt = $ShowToNotLogged ? $btnNotLoggedAlt : '';
-    $buttonDisabled = 'disabled';
 } else {
     try {
         // Otteniamo i valori correnti dell'utente
@@ -72,38 +74,41 @@ if (!$EVOuserId || !$docid) {
     }
 }
 
-$output = "
-<div class=\"wishlist-container\" data-docid=\"$docid\">
-    <button type=\"button\" 
-        class=\"add-to-wishlist $btnClass\" 
-        data-docid=\"$docid\" 
-        data-userid=\"$userId\" 
-        data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
-        data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
-        data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
-        data-already-alt='" . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . "'
-        data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
-        title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
-        aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
-        id=\"wishlist-button-$docid\"
-        $buttonDisabled>
-        $buttonText
-    </button>
-</div>
-";
+$output = '';
+if ($ShowToNotLogged || $EVOuserId) {
+    $output = "
+    <div class=\"wishlist-container\" data-docid=\"$docid\">
+        <button type=\"button\" 
+            class=\"add-to-wishlist $btnClass\" 
+            data-docid=\"$docid\" 
+            data-userid=\"$userId\" 
+            data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
+            data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
+            data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
+            data-already-alt='" . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . "'
+            data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
+            title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
+            aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
+            id=\"wishlist-button-$docid\"
+            $buttonDisabled>
+            $buttonText
+        </button>
+    </div>
+    ";
+}
 
 // JavaScript (una volta sola)
 if (!defined('WISHLIST_SCRIPT_LOADED')) {
     define('WISHLIST_SCRIPT_LOADED', true);
     
     $scriptoutput = '
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/snippets/UserWishList/libs/toastify/toastify.min.css">
+	<script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         async function updateWishlistCount(docid) {
             try {
-                const response = await fetch("/assets/snippets/AddToWishList/ajax_handler.php", {
+                const response = await fetch("/assets/snippets/UserWishList/includes/add_handler.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
@@ -118,7 +123,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                 if (data.success) {
                     const containers = document.querySelectorAll(".wishlist-count-" + data.docid);
                     containers.forEach(counter => {
-                        counter.textContent = data.count;
+                        counter.textContent = "(" + data.count + ")";
                     });
                 }
             } catch (error) {
@@ -130,7 +135,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
             if (button.disabled) return;
             
             try {
-                const response = await fetch("/assets/snippets/AddToWishList/ajax_handler.php", {
+                const response = await fetch("/assets/snippets/UserWishList/includes/add_handler.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",

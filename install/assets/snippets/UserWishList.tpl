@@ -6,9 +6,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.2
+ * @version   2.3
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 11:18
+ * @lastupdate 29-11-2024 12:15
  */
 // Funzioni helper per il PDF
 function extractPlaceholders($tpl) {
@@ -84,7 +84,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
         }
         switch ($format) {
             case 'pdf':
-                require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/tcpdf/tcpdf.php';
+                require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/libs/tcpdf/tcpdf.php';
                 class WishListPDF extends TCPDF {
                     public function Header() {
                         $this->SetY(15);

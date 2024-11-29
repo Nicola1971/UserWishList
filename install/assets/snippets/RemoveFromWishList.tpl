@@ -6,7 +6,7 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.7
+ * @version   1.8
  * @internal  @modx_category UserWishList
  * @lastupdate 28-11-2024 11:30
  */
@@ -53,15 +53,15 @@ if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
     define('REMOVE_WISHLIST_SCRIPT_LOADED', true);
     
     $scriptoutput = '
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/snippets/UserWishList/libs/toastify/toastify.min.css">
+	<script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         async function removeFromWishlist(button) {
             if (button.disabled) return;
             
             try {
-                const response = await fetch("/assets/snippets/RemoveFromWishList/ajax_handler.php", {
+                const response = await fetch("/assets/snippets/UserWishList/includes/remove_handler.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
