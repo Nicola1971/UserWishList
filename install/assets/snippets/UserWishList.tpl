@@ -1,4 +1,3 @@
-<?php
 /**
  * UserWishList
  *
@@ -6,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.3
+ * @version   2.4
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 12:15
+ * @lastupdate 29-11-2024 16:35
  */
 // Funzioni helper per il PDF
 function extractPlaceholders($tpl) {
@@ -142,7 +141,7 @@ try {
         return '<p>La tua WishList è vuota</p>';
     }
     // Prepara i parametri per DocLister
-    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => isset($selectFields) ? $selectFields : 'id,pagetitle,introtext', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC');
+    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => isset($selectFields) ? $selectFields : 'id,pagetitle,introtext', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC');
     // Form di esportazione
     $exportForm = '';
     if ($showExport) {
