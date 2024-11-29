@@ -1,7 +1,7 @@
 <?php
 define('MODX_API_MODE', true);
-include_once("../../../../index.php");
-require_once "functions.php";
+include_once("../../../../../index.php");
+require_once "../functions.php";
 
 $evo = evolutionCMS();
 $evo->db->connect();

@@ -1,14 +1,13 @@
-<?php
 /**
  * RemoveFromWishList
  *
- * Remove From WishList
+ * Remove items from WishList
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.8
+ * @version   1.9
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 11:30
+ * @lastupdate 29-11-2024 13:00
  */
 
 // Verifica e imposta i parametri
@@ -19,6 +18,7 @@ $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-danger';
 $btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : 'Rimuovi dalla WishList';
 $btnNotInText = isset($btnNotInText) ? $btnNotInText : 'Non in WishList';
+$loadToastify = isset($loadToastify) ? (int)$loadToastify : 1; // 1 = carica, 0 = non caricare
 
 // Verifica WishList
 $isInWishlist = false;
@@ -52,7 +52,14 @@ $output = "
 if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
     define('REMOVE_WISHLIST_SCRIPT_LOADED', true);
     
-    $scriptoutput = '
+    $scriptoutput = '';
+    if ($loadToastify) {
+        $scriptoutput .= '
+        <link rel="stylesheet" type="text/css" href="/assets/snippets/UserWishList/libs/toastify/toastify.min.css">
+        <script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>';
+    }
+    
+    $scriptoutput .= '
     <link rel="stylesheet" type="text/css" href="/assets/snippets/UserWishList/libs/toastify/toastify.min.css">
 	<script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>
     <script>
@@ -61,7 +68,7 @@ if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
             if (button.disabled) return;
             
             try {
-                const response = await fetch("/assets/snippets/UserWishList/includes/remove_handler.php", {
+                const response = await fetch("/assets/snippets/UserWishList/includes/ajax/remove_handler.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
