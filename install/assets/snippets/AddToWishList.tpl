@@ -6,9 +6,9 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.1
+ * @version   2.2
  * @internal  @modx_category UserWishList
- * @lastupdate 28-11-2024 20:45
+ * @lastupdate 28-11-2024 21:15
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/AddToWishList/functions.php';
@@ -23,6 +23,7 @@ $btnAddText = isset($btnAddText) ? $btnAddText : 'Aggiungi a WishList';
 $btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : 'Già in WishList';
 $btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : 'Aggiungi alla lista dei desideri';
 $btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : 'Elemento già presente nella lista dei desideri';
+$btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : 'Effettua il login per aggiungere alla lista dei desideri';
 $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
 $ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : '<p class="text-muted">Effettua il login per aggiungere alla WishList</p>';
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
@@ -45,48 +46,31 @@ if (!$EVOuserId || !$docid) {
         }
         return $ToNotLoggedTpl;
     }
-    return '';
-}
-
-try {
-    // Otteniamo i valori correnti dell'utente
-    $tvValues = \UserManager::getValues(['id' => $userId]);
-    
-    // Verifica WishList
-    $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
-    $wishListIds = $userWishList ? explode(',', $userWishList) : [];
-    $isInWishlist = in_array($docid, $wishListIds);
-    
-    // Ottieni il conteggio totale
-    $totalCount = count($wishListIds);
-    
-    // Set placeholders per il conteggio
-    $modx->setPlaceholder('wishlist_count', $totalCount);
-    $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $docid, str_replace('[+count+]', $totalCount, $counterTpl)));
-    
-} catch (\Exception $e) {
-    $isInWishlist = false;
-    $totalCount = 0;
-    $modx->setPlaceholder('wishlist_count', 0);
-    $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $docid, str_replace('[+count+]', 0, $counterTpl)));
-    
-} catch (\Exception $e) {
-    $isInWishlist = false;
-    $totalCount = 0;
-    // In caso di errore, mostra il messaggio per utenti non loggati
-    if ($ShowToNotLogged) {
-        if (substr($ToNotLoggedTpl, 0, 1) === '@') {
-            $chunkName = substr($ToNotLoggedTpl, 1);
-            return $modx->getChunk($chunkName);
-        }
-        return $ToNotLoggedTpl;
+    $buttonText = $ShowToNotLogged ? $btnAddText : '';
+    $buttonAlt = $ShowToNotLogged ? $btnNotLoggedAlt : '';
+    $buttonDisabled = 'disabled';
+} else {
+    try {
+        // Otteniamo i valori correnti dell'utente
+        $tvValues = \UserManager::getValues(['id' => $userId]);
+        
+        // Verifica WishList
+        $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
+        $wishListIds = $userWishList ? explode(',', $userWishList) : [];
+        $isInWishlist = in_array($docid, $wishListIds);
+        
+        // Button HTML
+        $buttonText = $isInWishlist ? $btnAlreadyText : $btnAddText;
+        $buttonAlt = $isInWishlist ? $btnAlreadyAlt : $btnAddAlt;
+        $buttonDisabled = $isInWishlist ? 'disabled' : '';
+        
+    } catch (\Exception $e) {
+        $isInWishlist = false;
+        $buttonText = $btnAddText;
+        $buttonAlt = $btnNotLoggedAlt;
+        $buttonDisabled = 'disabled';
     }
-    return '';
 }
-// Button HTML
-$buttonText = $isInWishlist ? $btnAlreadyText : $btnAddText;
-$buttonAlt = $isInWishlist ? $btnAlreadyAlt : $btnAddAlt;
-$buttonDisabled = $isInWishlist ? 'disabled' : '';
 
 $output = "
 <div class=\"wishlist-container\" data-docid=\"$docid\">
@@ -98,6 +82,7 @@ $output = "
         data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
         data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
         data-already-alt='" . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . "'
+        data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
         title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
         aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
         id=\"wishlist-button-$docid\"
