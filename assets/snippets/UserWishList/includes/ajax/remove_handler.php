@@ -1,6 +1,12 @@
 <?php
 define('MODX_API_MODE', true);
 include_once("../../../../../index.php");
+//Language
+$_UWLlang = array();
+include('../../lang/en.php');
+if (file_exists('../../lang/' . $modx->config['manager_language'] . '.php')) {
+    include('../../lang/' . $modx->config['manager_language'] . '.php');
+}
 $evo = evolutionCMS();
 $evo->db->connect();
 
@@ -28,13 +34,13 @@ if (isset($_POST['remove_from_wishlist'])) {
             echo json_encode([
                 'success' => true,
                 'docid' => $docid,
-                'message' => 'Rimosso dalla WishList'
+                'message' => $_UWLlang['removed_from_wishList']
             ]);
         } else {
             echo json_encode([
                 'success' => false,
                 'docid' => $docid,
-                'message' => 'Elemento non presente nella WishList'
+                'message' => $_UWLlang['item_notin_wishList']
             ]);
         }
     } catch (\Exception $e) {

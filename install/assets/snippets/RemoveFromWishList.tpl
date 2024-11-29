@@ -1,14 +1,21 @@
 /**
  * RemoveFromWishList
  *
- * Remove items from WishList
+ * Remove From WishList
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.9
+ * @version   2.0
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 13:00
+ * @lastupdate 29-11-2024 20:32
  */
+
+	//Language
+$_UWLlang = array();
+include('assets/snippets/UserWishList/lang/en.php');
+if (file_exists('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+}
 
 // Verifica e imposta i parametri
 $docid = (isset($docid) && (int)$docid > 0) ? (int)$docid : $modx->documentIdentifier;
@@ -16,8 +23,8 @@ $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-danger';
-$btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : 'Rimuovi dalla WishList';
-$btnNotInText = isset($btnNotInText) ? $btnNotInText : 'Non in WishList';
+$btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : $_UWLlang['btnRemoveText']; //Remove from Wishlist
+$btnNotInText = isset($btnNotInText) ? $btnNotInText : $_UWLlang['btnNotInText']; //Not in Wishlist
 $loadToastify = isset($loadToastify) ? (int)$loadToastify : 1; // 1 = carica, 0 = non caricare
 
 // Verifica WishList

@@ -5,10 +5,16 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.4
+ * @version   2.5
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 16:35
+ * @lastupdate 29-11-2024 19:57
  */
+//Language
+$_UWLlang = array();
+include('assets/snippets/UserWishList/lang/en.php');
+if (file_exists('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+}
 // Funzioni helper per il PDF
 function extractPlaceholders($tpl) {
     preg_match_all('/\[\+([^:\+\]]+)/', $tpl, $matches);
@@ -41,25 +47,27 @@ $exportFormats = isset($exportFormats) ? explode(',', $exportFormats) : ['pdf', 
 $showExport = isset($showExport) ? (int)$showExport : 1; // 1 = mostra, 0 = nascondi
 // Parametri PDF
 $pdfFields = isset($pdfFields) ? explode(',', $pdfFields) : ['pagetitle', 'introtext', 'url'];
-$pdfTitle = isset($pdfTitle) ? $pdfTitle : 'La mia WishList';
+$pdf_Title = $_UWLlang['pdf_title'];
+$pdfTitle = isset($pdfTitle) ? $pdfTitle : $pdf_Title;
 $pdfHeaderTpl = isset($pdfHeaderTpl) ? $pdfHeaderTpl : '@CODE: 
     <h1>[+title+]</h1>
-    <p>Esportato il [+date+]</p>';
+    <p>' . $_UWLlang['exported_on'] . ' [+date+]</p>';
 $pdfItemTpl = isset($pdfItemTpl) ? $pdfItemTpl : '@CODE:
     <h2>[+pagetitle+]</h2>
     [+introtext:ifNotEmpty=`<p>[+introtext+]</p>`+]
     [+url:ifNotEmpty=`<p>Link: [+url+]</p>`+]';
+
 // Gestione dell'esportazione
 if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
     try {
         $format = $_POST['format'];
         if (!in_array($format, $exportFormats)) {
-            throw new Exception('Formato non supportato');
+            throw new Exception('' . $_UWLlang['format_not_supported'] . '');
         }
         $tvValues = \UserManager::getValues(['id' => $userId]);
         $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
         if (empty($userWishList)) {
-            throw new Exception('La WishList è vuota');
+            throw new Exception('' . $_UWLlang['wishList_is_empty'] . '');
         }
         // Ottieni i campi richiesti dai template, escludendo i campi calcolati
         $calculatedFields = ['url', 'title', 'date', 'username']; // campi che aggiungeremo dopo
@@ -91,7 +99,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
                     public function Footer() {
                         $this->SetY(-15);
                         $this->SetFont('helvetica', 'I', 8);
-                        $this->Cell(0, 10, 'Pagina ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C');
+                        $this->Cell(0, 10, '' . $_UWLlang["page"] . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C');
                     }
                 }
                 $pdf = new WishListPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -117,7 +125,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
                 header('Content-Disposition: attachment; filename=wishlist.csv');
                 $output = fopen('php://output', 'w');
                 fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
-                fputcsv($output, ['Titolo', 'Descrizione', 'URL']);
+                fputcsv($output, [$_UWLlang['title'], $_UWLlang['description'], $_UWLlang['URL']]);
                 foreach ($items as $item) {
                     fputcsv($output, [$item['pagetitle'], $item['introtext'], $modx->makeUrl($item['id'], '', '', 'full') ]);
                 }
@@ -127,7 +135,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
         }
     }
     catch(Exception $e) {
-        return 'Errore durante l\'esportazione: ' . $e->getMessage();
+        return '' . $_UWLlang['export_error'] . ': ' . $e->getMessage();
     }
 }
 // Visualizzazione normale della lista
@@ -138,7 +146,7 @@ try {
     $totalItems = empty($userWishList) ? 0 : count(explode(',', $userWishList));
     $modx->setPlaceholder('wishlist_total_items', $totalItems);
     if (empty($userWishList)) {
-        return '<p>La tua WishList è vuota</p>';
+        return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
     // Prepara i parametri per DocLister
     $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => isset($selectFields) ? $selectFields : 'id,pagetitle,introtext', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC');
@@ -155,7 +163,7 @@ try {
         }, $exportFormats)) : '') . '
                 </select>
                 <button type="submit" name="export_wishlist" class="ml-2 btn btn-primary">
-                    Esporta WishList
+                    ' . $_UWLlang['export_wishList'] . '
                 </button>
             </form>
         </div>
@@ -163,7 +171,7 @@ try {
     }
     // Counter
 	if ($showCounter) {
-    $counter = '<div class="wishlist-counter mb-4">Elementi salvati: <span class="badge bg-info">' . $totalItems . '</span></div>';
+    $counter = '<div class="wishlist-counter mb-4">' . $_UWLlang['saved_elements'] . ': <span class="badge bg-info">' . $totalItems . '</span></div>';
     }
     // Esegui DocLister
     $output = $modx->runSnippet('DocLister', $params);
@@ -228,5 +236,5 @@ try {
     return $counter . $exportForm . '<div class="container wishlist-container">' . $output . '</div>';
 }
 catch(\Exception $e) {
-    return 'Errore: ' . $e->getMessage();
+    return '' . $_UWLlang['error'] . ': ' . $e->getMessage();
 }

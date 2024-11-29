@@ -1,16 +1,23 @@
 /**
  * AddToWishList
  *
- * Add items to the WishList
+ * Add To WishList
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.5
+ * @version   2.6
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 12:55
+ * @lastupdate 29-11-2024 20:52
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
+
+//Language
+$_UWLlang = array();
+include('assets/snippets/UserWishList/lang/en.php');
+if (file_exists('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+}
 
 // Verifica e imposta i parametri
 $docid = (isset($docid) && (int)$docid > 0) ? (int)$docid : $modx->documentIdentifier;
@@ -18,13 +25,13 @@ $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-success';
-$btnAddText = isset($btnAddText) ? $btnAddText : 'Aggiungi a WishList';
-$btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : 'Aggiungi alla lista dei desideri';
-$btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : 'Già in WishList';
-$btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : 'Elemento già presente nella lista dei desideri';
+$btnAddText = isset($btnAddText) ? $btnAddText : $_UWLlang['btnAddText']; //Add to Wishlist
+$btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : $_UWLlang['btnAddAlt']; //Add to Wishlist
+$btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : $_UWLlang['btnAlreadyText']; //Already in Wishlist
+$btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : $_UWLlang['btnAlreadyAlt']; //Item already present in wishlist
 $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
-$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : '<p class="text-muted">Effettua il login per aggiungere alla WishList</p>';
-$btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : 'Effettua il login per aggiungere alla lista dei desideri';
+$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : $_UWLlang['ToNotLoggedTpl']; //<p class="text-muted">Log in to add to WishList</p>
+$btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : $_UWLlang['btnNotLoggedAlt']; //Log in to add to WishList
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
 $counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">([+count+])</span>';
 $loadToastify = isset($loadToastify) ? (int)$loadToastify : 1; // 1 = carica, 0 = non caricare

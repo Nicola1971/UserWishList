@@ -2,7 +2,12 @@
 define('MODX_API_MODE', true);
 include_once("../../../../../index.php");
 require_once "../functions.php";
-
+//Language
+$_UWLlang = array();
+include('../../lang/en.php');
+if (file_exists('../../lang/' . $modx->config['manager_language'] . '.php')) {
+    include('../../lang/' . $modx->config['manager_language'] . '.php');
+}
 $evo = evolutionCMS();
 $evo->db->connect();
 
@@ -40,7 +45,7 @@ if (isset($_POST['add_to_wishlist'])) {
             die(json_encode([
                 'success' => true,
                 'docid' => $docid,
-                'message' => 'Aggiunto alla WishList',
+                'message' => $_UWLlang['added_to_wishList'],
                 'count' => getUserWishlistProductCount($docid, $userTv)
             ]));
         }
@@ -48,7 +53,7 @@ if (isset($_POST['add_to_wishlist'])) {
         die(json_encode([
             'success' => false,
             'docid' => $docid,
-            'message' => 'Già presente nella WishList',
+            'message' => $_UWLlang['already_in_wishList'],
             'count' => getUserWishlistProductCount($docid, $userTv)
         ]));
     } catch (\Exception $e) {
