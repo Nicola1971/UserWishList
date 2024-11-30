@@ -5,9 +5,9 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.7
+ * @version   2.8
  * @internal  @modx_category UserWishList
- * @lastupdate 30-11-2024 10:22
+ * @lastupdate 30-11-2024 15:00
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
@@ -132,105 +132,105 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
         <script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>';
     }
     
-    $scriptoutput .= '
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        async function updateWishlistCount(docid) {
-            try {
-                const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        get_wishlist_count: 1,
-                        docid: docid
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    const containers = document.querySelectorAll(".wishlist-count-" + data.docid);
-                    containers.forEach(counter => {
-                        counter.textContent = "' . sprintf($_UWLlang['counter_format'], '" + data.count + "') . '";
-                    });
-                }
-            } catch (error) {
-                console.error("Errore nell\'aggiornamento del contatore:", error);
-            }
-        }
+$scriptoutput .= '
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+   async function updateWishlistCounts(docid) {
+       try {
+           const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
+               method: "POST",
+               headers: {
+                   "Content-Type": "application/x-www-form-urlencoded",
+               },
+               body: new URLSearchParams({
+                   get_wishlist_count: 1,
+                   docid: docid
+               })
+           });
+           
+           const data = await response.json();
+           if (data.success) {
+               // Aggiorna TUTTI i contatori per questo docid nella pagina
+               document.querySelectorAll(".wishlist-count-" + data.docid).forEach(counter => {
+                   counter.textContent = data.formatted_count;
+               });
+               
+               // Aggiorna anche TUTTI i pulsanti per questo docid
+               document.querySelectorAll("#wishlist-button-" + data.docid).forEach(button => {
+                   button.disabled = true;
+                   button.innerHTML = button.dataset.alreadyText;
+                   button.title = button.dataset.alreadyAlt;
+                   button.setAttribute("aria-label", button.dataset.alreadyAlt);
+               });
+           }
+       } catch (error) {
+           console.error("Errore nell\'aggiornamento dei contatori:", error);
+       }
+   }
 
-        async function addToWishlist(button) {
-            if (button.disabled) return;
-            
-            try {
-                const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        add_to_wishlist: 1,
-                        docid: button.dataset.docid,
-                        userId: button.dataset.userid
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const targetButton = document.getElementById("wishlist-button-" + data.docid);
-                    if (targetButton) {
-                        targetButton.disabled = true;
-                        targetButton.innerHTML = targetButton.dataset.alreadyText;
-                        targetButton.title = targetButton.dataset.alreadyAlt;
-                        targetButton.setAttribute("aria-label", targetButton.dataset.alreadyAlt);
-                    }
-                    
-                    // Aggiorna il contatore
-                    updateWishlistCount(data.docid);
-                    
-                    Toastify({
-                        text: data.message || "' . $_UWLlang['toast_success'] . '",
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: "left",
-                        style: {
-                            background: "linear-gradient(to right, #00b09b, #96c93d)",
-                        }
-                    }).showToast();
-                } else {
-                    Toastify({
-                        text: data.message || "' . $_UWLlang['toast_error'] . '",
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: "left",
-                        style: {
-                            background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                        }
-                    }).showToast();
-                }
-            } catch (error) {
-                console.error("Errore:", error);
-                Toastify({
-                    text: "' . $_UWLlang['toast_error'] . '",
-                    duration: 3000,
-                    gravity: "bottom",
-                    position: "left",
-                    style: {
-                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    }
-                }).showToast();
-            }
-        }
+   async function addToWishlist(button) {
+       if (button.disabled) return;
+       
+       try {
+           const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
+               method: "POST",
+               headers: {
+                   "Content-Type": "application/x-www-form-urlencoded",
+               },
+               body: new URLSearchParams({
+                   add_to_wishlist: 1,
+                   docid: button.dataset.docid,
+                   userId: button.dataset.userid
+               })
+           });
+           
+           const data = await response.json();
+           
+           if (data.success) {
+               // Aggiorna tutti i contatori e i pulsanti per questo prodotto
+               updateWishlistCounts(data.docid);
+               
+               Toastify({
+                   text: data.message || "' . $_UWLlang['toast_success'] . '",
+                   duration: 3000,
+                   gravity: "bottom",
+                   position: "left",
+                   style: {
+                       background: "linear-gradient(to right, #00b09b, #96c93d)",
+                   }
+               }).showToast();
+           } else {
+               Toastify({
+                   text: data.message || "' . $_UWLlang['toast_error'] . '",
+                   duration: 3000,
+                   gravity: "bottom",
+                   position: "left",
+                   style: {
+                       background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                   }
+               }).showToast();
+           }
+       } catch (error) {
+           console.error("Errore:", error);
+           Toastify({
+               text: "' . $_UWLlang['toast_error'] . '",
+               duration: 3000,
+               gravity: "bottom",
+               position: "left",
+               style: {
+                   background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+               },
+           }).showToast();
+       }
+   }
 
-        document.querySelectorAll(".add-to-wishlist").forEach(button => {
-            button.addEventListener("click", function() {
-                addToWishlist(this);
-            });
-        });
-    });
-    </script>';
+   document.querySelectorAll(".add-to-wishlist").forEach(button => {
+       button.addEventListener("click", function() {
+           addToWishlist(this);
+       });
+   });
+});
+</script>';
 
     $modx->regClientScript($scriptoutput);
 }
