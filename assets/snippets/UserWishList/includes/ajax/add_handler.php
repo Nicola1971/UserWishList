@@ -2,15 +2,17 @@
 define('MODX_API_MODE', true);
 include_once("../../../../../index.php");
 require_once "../functions.php";
+
 //Language
 $_UWLlang = array();
-include('../../lang/en.php');
-if (file_exists('../../lang/' . $modx->config['manager_language'] . '.php')) {
-    include('../../lang/' . $modx->config['manager_language'] . '.php');
+$langPath = dirname(dirname(dirname(__FILE__))) . '/lang/';
+include($langPath . 'en.php');
+if (file_exists($langPath . $modx->config['manager_language'] . '.php')) {
+    include($langPath . $modx->config['manager_language'] . '.php');
 }
+
 $evo = evolutionCMS();
 $evo->db->connect();
-
 header('Content-Type: application/json');
 
 if (isset($_POST['get_wishlist_count'])) {
@@ -20,7 +22,8 @@ if (isset($_POST['get_wishlist_count'])) {
     die(json_encode([
         'success' => true,
         'count' => $count,
-        'docid' => $docid
+        'docid' => $docid,
+        'formatted_count' => sprintf($_UWLlang['counter_format'], $count)
     ]));
 }
 
@@ -42,28 +45,36 @@ if (isset($_POST['add_to_wishlist'])) {
             $userData = ['id' => $userId, $userTv => $userWishList];
             \UserManager::saveValues($userData);
             
+            $count = getUserWishlistProductCount($docid, $userTv);
+            
             die(json_encode([
                 'success' => true,
                 'docid' => $docid,
                 'message' => $_UWLlang['added_to_wishList'],
-                'count' => getUserWishlistProductCount($docid, $userTv)
+                'count' => $count,
+                'formatted_count' => sprintf($_UWLlang['counter_format'], $count)
             ]));
         }
+        
+        $count = getUserWishlistProductCount($docid, $userTv);
         
         die(json_encode([
             'success' => false,
             'docid' => $docid,
             'message' => $_UWLlang['already_in_wishList'],
-            'count' => getUserWishlistProductCount($docid, $userTv)
+            'count' => $count,
+            'formatted_count' => sprintf($_UWLlang['counter_format'], $count)
         ]));
     } catch (\Exception $e) {
+        $count = getUserWishlistProductCount($docid, $userTv);
+        
         die(json_encode([
             'success' => false,
             'docid' => $docid,
             'error' => $e->getMessage(),
-            'count' => getUserWishlistProductCount($docid, $userTv)
+            'count' => $count,
+            'formatted_count' => sprintf($_UWLlang['counter_format'], $count)
         ]));
     }
 }
 exit();
-?>
