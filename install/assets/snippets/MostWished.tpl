@@ -1,13 +1,20 @@
 /**
  * MostWished
  * 
- * Mostra i prodotti più desiderati dagli utenti
+ * Show the products most desired by users
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.5
+ * @version   1.6
  * @internal  @modx_category UserWishList
  */
+
+//Language
+$_UWLlang = array();
+include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/en.php');
+if (file_exists(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+}
 
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $limit = isset($limit) ? (int)$limit : 10;
@@ -128,4 +135,4 @@ try {
     return 'Errore: ' . $e->getMessage();
 }
 
-return '<p>Template Variable non trovata</p>';
+return '<p>' . $_UWLlang['tv_notfound'] . '</p>';

@@ -45,3 +45,6 @@ $_UWLlang['btnRemoveText'] = 'Eliminar de la lista de deseos';
 $_UWLlang['btnNotInText'] = 'No en la lista de deseos';
 $_UWLlang['removed_from_wishList'] = 'Eliminado de la lista de deseos';
 $_UWLlang['item_notin_wishList'] = 'Elemento no presente en la lista de deseos';
+
+//MostWished
+$_UWLlang['tv_notfound'] = 'Variable de plantilla no encontrada';

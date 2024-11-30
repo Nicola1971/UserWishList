@@ -45,3 +45,6 @@ $_UWLlang['btnRemoveText'] = 'Verwijderen uit verlanglijst';
 $_UWLlang['btnNotInText'] = 'Niet in verlanglijst';
 $_UWLlang['removed_from_wishList'] = 'Verwijderd uit verlanglijst';
 $_UWLlang['item_notin_wishList'] = 'Item staat niet in verlanglijst';
+
+//MostWished
+$_UWLlang['tv_notfound'] = 'Templatevariabele niet gevonden';

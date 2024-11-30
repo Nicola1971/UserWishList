@@ -45,3 +45,6 @@ $_UWLlang['btnRemoveText'] = 'Удалить из списка желаний';
 $_UWLlang['btnNotInText'] = 'Не в списке желаний';
 $_UWLlang['removed_from_wishList'] = 'Удалено из списка желаний';
 $_UWLlang['item_notin_wishList'] = 'Элемент не присутствует в списке желаний';
+
+//MostWished
+$_UWLlang['tv_notfound'] = 'Шаблонная переменная не найдена';
