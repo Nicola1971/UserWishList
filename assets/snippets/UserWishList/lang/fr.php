@@ -36,6 +36,9 @@ $_UWLlang['btnNotLoggedAlt'] = 'Connectez-vous pour ajouter à la liste de souha
 $_UWLlang['add_to_wishList'] = 'Ajouter à la liste de souhaits';
 $_UWLlang['added_to_wishList'] = 'Ajouté à la liste de souhaits';
 $_UWLlang['already_in_wishList'] = 'Déjà dans la liste de souhaits';
+$_UWLlang['counter_format'] = '%d utilisateurs ont consulté ceci';
+$_UWLlang['toast_success'] = 'Ajouté à la liste de souhaits';
+$_UWLlang['toast_error'] = 'Erreur lors de l\'ajout à la liste de souhaits';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Retirer de la liste de souhaits';

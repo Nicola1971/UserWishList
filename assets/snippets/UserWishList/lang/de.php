@@ -36,6 +36,9 @@ $_UWLlang['btnNotLoggedAlt'] = 'Einloggen, um zur Wunschliste hinzuzufügen';
 $_UWLlang['add_to_wishList'] = 'Zur Wunschliste hinzufügen';
 $_UWLlang['added_to_wishList'] = 'Zur Wunschliste hinzugefügt';
 $_UWLlang['already_in_wishList'] = 'Bereits in der Wunschliste';
+$_UWLlang['counter_format'] = '%d Benutzer haben dies angesehen';
+$_UWLlang['toast_success'] = 'Zur Wunschliste hinzugefügt';
+$_UWLlang['toast_error'] = 'Fehler beim Hinzufügen zur Wunschliste';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Aus der Wunschliste entfernen';

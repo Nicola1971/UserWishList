@@ -27,7 +27,6 @@ $_UWLlang['export_wishList'] = 'Esporta WishList';
 $_UWLlang['saved_elements'] = 'Elementi salvati';
 
 //AddToWishList
-
 $_UWLlang['btnAddText'] = 'Aggiungi alla lista dei desideri';
 $_UWLlang['btnAddAlt'] = 'Aggiungi alla lista dei desideri';
 $_UWLlang['btnAlreadyText'] = 'Già in WishList';
@@ -37,6 +36,9 @@ $_UWLlang['btnNotLoggedAlt'] = 'Effettua il login per aggiungere alla lista dei 
 $_UWLlang['add_to_wishList'] = 'Aggiungi alla lista dei desideri';
 $_UWLlang['added_to_wishList'] = 'Aggiunto alla WishList';
 $_UWLlang['already_in_wishList'] = 'Già presente nella WishList';
+$_UWLlang['counter_format'] = 'Osservato da %d utenti';
+$_UWLlang['toast_success'] = 'Aggiunto alla WishList';
+$_UWLlang['toast_error'] = 'Errore durante l\'aggiunta';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Rimuovi dalla WishList';

@@ -36,6 +36,9 @@ $_UWLlang['btnNotLoggedAlt'] = 'Log in to add to WishList';
 $_UWLlang['add_to_wishList'] = 'Add to Wish List';
 $_UWLlang['added_to_wishList'] = 'Added to WishList';
 $_UWLlang['already_in_wishList'] = 'Already in WishList';
+$_UWLlang['counter_format'] = 'Watched by %d users';
+$_UWLlang['toast_success'] = 'Added to WishList';
+$_UWLlang['toast_error'] = 'Error adding to WishList';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Remove from WishList';
