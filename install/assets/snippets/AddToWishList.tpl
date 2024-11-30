@@ -5,18 +5,18 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.6
+ * @version   2.7
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 20:52
+ * @lastupdate 30-11-2024 10:22
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
 
 //Language
 $_UWLlang = array();
-include('assets/snippets/UserWishList/lang/en.php');
-if (file_exists('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
-    include('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/en.php');
+if (file_exists(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
 }
 
 // Verifica e imposta i parametri
@@ -25,16 +25,16 @@ $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-success';
-$btnAddText = isset($btnAddText) ? $btnAddText : $_UWLlang['btnAddText']; //Add to Wishlist
-$btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : $_UWLlang['btnAddAlt']; //Add to Wishlist
-$btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : $_UWLlang['btnAlreadyText']; //Already in Wishlist
-$btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : $_UWLlang['btnAlreadyAlt']; //Item already present in wishlist
+$btnAddText = isset($btnAddText) ? $btnAddText : $_UWLlang['btnAddText'];
+$btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : $_UWLlang['btnAddAlt'];
+$btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : $_UWLlang['btnAlreadyText'];
+$btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : $_UWLlang['btnAlreadyAlt'];
 $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
-$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : $_UWLlang['ToNotLoggedTpl']; //<p class="text-muted">Log in to add to WishList</p>
-$btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : $_UWLlang['btnNotLoggedAlt']; //Log in to add to WishList
+$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : $_UWLlang['ToNotLoggedTpl'];
+$btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : $_UWLlang['btnNotLoggedAlt'];
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
-$counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">([+count+])</span>';
-$loadToastify = isset($loadToastify) ? (int)$loadToastify : 1; // 1 = carica, 0 = non caricare
+$counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">' . sprintf($_UWLlang['counter_format'], '[+count+]') . '</span>';
+$loadToastify = isset($loadToastify) ? (int)$loadToastify : 1;
 
 // Ottieni il numero di utenti che hanno il prodotto nella loro wishlist
 $totalUsers = getUserWishlistProductCount($docid, $userTv);
@@ -48,33 +48,16 @@ $output = '';
 if (!$EVOuserId || !$docid) {
     // Utente non loggato
     if ($ShowToNotLogged) {
-        // Se vogliamo mostrare il bottone anche agli utenti non loggati
         if (substr($ToNotLoggedTpl, 0, 1) === '@') {
+            // Se è un chunk
             $chunkName = substr($ToNotLoggedTpl, 1);
             $output = $modx->getChunk($chunkName);
+        } else if ($ToNotLoggedTpl === $_UWLlang['ToNotLoggedTpl'] || substr($ToNotLoggedTpl, 0, 1) === '<') {
+            // Se è HTML diretto o il valore predefinito
+            $output = $ToNotLoggedTpl;
         } else {
-            $buttonText = $btnAddText;
-            $buttonAlt = $btnNotLoggedAlt; // Usiamo il testo specifico per non loggati
-            $buttonDisabled = 'disabled';
-            
-            $output = "
-            <div class=\"wishlist-container\" data-docid=\"$docid\">
-                <button type=\"button\" 
-                    class=\"add-to-wishlist $btnClass\" 
-                    data-docid=\"$docid\" 
-                    data-userid=\"$userId\" 
-                    data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
-                    data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
-                    data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
-                    data-already-alt='" . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . "'
-                    data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
-                    title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
-                    aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
-                    id=\"wishlist-button-$docid\"
-                    $buttonDisabled>
-                    $buttonText
-                </button>
-            </div>";
+            // Se è testo semplice
+            $output = htmlspecialchars($ToNotLoggedTpl);
         }
     }
 } else {
@@ -169,7 +152,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                 if (data.success) {
                     const containers = document.querySelectorAll(".wishlist-count-" + data.docid);
                     containers.forEach(counter => {
-                        counter.textContent = "(" + data.count + ")";
+                        counter.textContent = "' . sprintf($_UWLlang['counter_format'], '" + data.count + "') . '";
                     });
                 }
             } catch (error) {
@@ -208,7 +191,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                     updateWishlistCount(data.docid);
                     
                     Toastify({
-                        text: data.message,
+                        text: data.message || "' . $_UWLlang['toast_success'] . '",
                         duration: 3000,
                         gravity: "bottom",
                         position: "left",
@@ -218,7 +201,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                     }).showToast();
                 } else {
                     Toastify({
-                        text: data.message || "Errore durante l\'aggiunta",
+                        text: data.message || "' . $_UWLlang['toast_error'] . '",
                         duration: 3000,
                         gravity: "bottom",
                         position: "left",
@@ -230,7 +213,7 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
             } catch (error) {
                 console.error("Errore:", error);
                 Toastify({
-                    text: "Errore durante l\'operazione",
+                    text: "' . $_UWLlang['toast_error'] . '",
                     duration: 3000,
                     gravity: "bottom",
                     position: "left",
