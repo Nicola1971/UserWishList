@@ -12,9 +12,9 @@
 
 	//Language
 $_UWLlang = array();
-include('assets/snippets/UserWishList/lang/en.php');
-if (file_exists('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
-    include('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/en.php');
+if (file_exists(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
 }
 
 // Verifica e imposta i parametri

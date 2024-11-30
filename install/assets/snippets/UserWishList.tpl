@@ -1,7 +1,7 @@
 /**
  * UserWishList
  *
- * Visualizza la lista dei prodotti salvati con rimozione dinamica
+ * View the list of products saved with dynamic removal
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
@@ -9,11 +9,11 @@
  * @internal  @modx_category UserWishList
  * @lastupdate 29-11-2024 19:57
  */
-//Language
+
 $_UWLlang = array();
-include('assets/snippets/UserWishList/lang/en.php');
-if (file_exists('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
-    include('assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/en.php');
+if (file_exists(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
+    include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
 }
 // Funzioni helper per il PDF
 function extractPlaceholders($tpl) {
