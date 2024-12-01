@@ -39,6 +39,7 @@ $_UWLlang['already_in_wishList'] = 'Al in verlanglijst';
 $_UWLlang['counter_format'] = '%d gebruikers hebben dit bekeken';
 $_UWLlang['toast_success'] = 'Toegevoegd aan verlanglijstje';
 $_UWLlang['toast_error'] = 'Fout bij toevoegen aan verlanglijstje';
+$_UWLlang['counter_update_error'] = 'Fout bij het bijwerken van de tellers';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Verwijderen uit verlanglijst';

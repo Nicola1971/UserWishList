@@ -39,6 +39,7 @@ $_UWLlang['already_in_wishList'] = 'Already in WishList';
 $_UWLlang['counter_format'] = 'Watched by %d users';
 $_UWLlang['toast_success'] = 'Added to WishList';
 $_UWLlang['toast_error'] = 'Error adding to WishList';
+$_UWLlang['counter_update_error'] = 'Error updating counters';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Remove from WishList';

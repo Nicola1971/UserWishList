@@ -39,6 +39,7 @@ $_UWLlang['already_in_wishList'] = 'Già presente nella Lista dei desideri';
 $_UWLlang['counter_format'] = 'Osservato da %d utenti';
 $_UWLlang['toast_success'] = 'Aggiunto alla Lista dei desideri';
 $_UWLlang['toast_error'] = 'Errore durante l\'aggiunta';
+$_UWLlang['counter_update_error'] = 'Errore nell\'aggiornamento dei contatori';
 
 //RemoveFromWishList
 $_UWLlang['btnRemoveText'] = 'Rimuovi dalla Lista dei desideri';
