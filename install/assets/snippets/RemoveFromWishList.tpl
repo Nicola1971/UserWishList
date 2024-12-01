@@ -5,16 +5,38 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.0
+ * @version   2.0.1
  * @internal  @modx_category UserWishList
- * @lastupdate 29-11-2024 20:32
+ * @lastupdate 30-12-2024 11:43
  */
 
-	//Language
-$_UWLlang = array();
-include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/en.php');
-if (file_exists(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php')) {
-    include(MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/' . $modx->config['manager_language'] . '.php');
+//Language
+// Sanitizzazione input e cast a string
+$customLang = isset($customLang) ? (string)$customLang : '';
+$customLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $customLang);
+$customLang = basename($customLang);
+
+// Inizializzazione array lingue
+$_UWLlang = [];
+
+// Percorso base per i file di lingua
+$langBasePath = MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/';
+
+// Caricamento file lingua personalizzato
+if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . '.php')) {
+    include($langBasePath . 'custom/' . $customLang . '.php');
+} else {
+    // Carica sempre l'inglese come fallback
+    include($langBasePath . 'en.php');
+    
+    // Carica la lingua del manager se disponibile e diversa dall'inglese
+    $managerLang = $modx->config['manager_language'];
+    $managerLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $managerLang);
+    $managerLang = basename($managerLang);
+    
+    if ($managerLang !== 'en' && file_exists($langBasePath . $managerLang . '.php')) {
+        include($langBasePath . $managerLang . '.php');
+    }
 }
 
 // Verifica e imposta i parametri
