@@ -1,112 +1,144 @@
 /**
  * WishedBy
- * 
+ *
  * Shows users who have added a product to their wishlist
- * 
+ *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.0
+ * @version   1.1
  * @internal  @modx_category UserWishList
- * @lastupdate 02-12-2024 17:54
+ * @lastupdate 02-12-2024 19:30
  */
 
-// Get parameters
+// Parameters
 $docid = isset($docid) ? $docid : $modx->documentIdentifier;
-$display = isset($display) ? (int)$display : 10;
-$tpl = isset($tpl) ? $tpl : '';
-$outerTpl = isset($outerTpl) ? $outerTpl : '';
-$userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
-$orderBy = isset($orderBy) ? (string)$orderBy : 'username';
-$orderDir = isset($orderDir) ? strtoupper($orderDir) : 'ASC';
+$display = isset($display) ? (int) $display : 10;
+$tpl = isset($tpl) ? $tpl : "";
+$outerTpl = isset($outerTpl) ? $outerTpl : "";
+$userTv = isset($userTv) ? (string) $userTv : "UserWishList";
+$privateWishTv = isset($privateWishTv)
+    ? (string) $privateWishTv
+    : "PrivateWishList";
+$orderBy = isset($orderBy) ? (string) $orderBy : "username";
+$orderDir = isset($orderDir) ? strtoupper($orderDir) : "ASC";
 
-// Validate parameters
-if (empty($docid)) return '';
-if (empty($tpl)) return 'Parameter &tpl is required';
-if (empty($outerTpl)) return 'Parameter &outerTpl is required';
-
-// Validate and sanitize order parameters
-$allowedFields = ['id', 'username', 'fullname', 'first_name', 'last_name', 'email'];
-if (!in_array($orderBy, $allowedFields)) $orderBy = 'username';
-if (!in_array($orderDir, ['ASC', 'DESC'])) $orderDir = 'ASC';
-
-// Prepare ORDER BY clause
-$orderByClause = '';
-switch($orderBy) {
-    case 'id':
-        $orderByClause = "ua.internalKey {$orderDir}";
-        break;
-    case 'username':
-        $orderByClause = "u.username {$orderDir}";
-        break;
-    case 'fullname':
-    case 'first_name':
-    case 'last_name':
-    case 'email':
-        $orderByClause = "ua.{$orderBy} {$orderDir}";
-        break;
+if (empty($docid) || empty($tpl) || empty($outerTpl)) {
+    return "";
 }
 
-// Get all users
-$output = array();
-$total = 0;
+// Validate order
+$allowedFields = [
+    "id",
+    "username",
+    "fullname",
+    "first_name",
+    "last_name",
+    "email",
+    "random"
+];
+if (!in_array($orderBy, $allowedFields)) {
+    $orderBy = "username";
+}
+if (!in_array($orderDir, ["ASC", "DESC"])) {
+    $orderDir = "ASC";
+}
 
-$query = "SELECT ua.internalKey, u.username, ua.email, ua.fullname, ua.first_name, ua.last_name 
-          FROM " . $modx->getFullTableName('user_attributes') . " ua
-          JOIN " . $modx->getFullTableName('users') . " u ON u.id = ua.internalKey
+$orderByClause = match ($orderBy) {
+    "id" => "ua.internalKey {$orderDir}",
+    "username" => "u.username {$orderDir}",
+    "random" => "RAND()",
+    default => "ua.{$orderBy} {$orderDir}"
+};
+
+// Get users
+$output = [];
+$totalWishers = 0;
+$visibleUsers = 0;
+
+$query =
+    "SELECT ua.internalKey, u.username, ua.email, ua.fullname, ua.first_name, ua.last_name 
+          FROM " .
+    $modx->getFullTableName("user_attributes") .
+    " ua
+          JOIN " .
+    $modx->getFullTableName("users") .
+    " u ON u.id = ua.internalKey
           ORDER BY {$orderByClause}";
-
-$allUsers = $modx->db->query($query);
+// Count total wishlist users (including private ones)
+$totalVisible = 0;
+$countQuery = "SELECT ua.internalKey FROM " . $modx->getFullTableName("user_attributes") . " ua
+          JOIN " . $modx->getFullTableName("users") . " u ON u.id = ua.internalKey";
+          
+$allUsers = $modx->db->query($countQuery);
 while ($user = $modx->db->getRow($allUsers)) {
-    $userId = $user['internalKey'];
-    
     try {
-        $userData = \UserManager::getValues(['id' => $userId]);
-        $wishlist = !empty($userData[$userTv]) ? $userData[$userTv] : '';
+        $userData = \UserManager::getValues(["id" => $user["internalKey"]]);
+        $wishlist = !empty($userData[$userTv]) ? $userData[$userTv] : "";
         
-        if (!empty($wishlist) && in_array($docid, explode(',', $wishlist))) {
-            $placeholders = array(
-                'userid' => $userId,
-                'username' => !empty($user['username']) ? $user['username'] : "User-".$userId,
-                'fullname' => !empty($user['fullname']) ? $user['fullname'] : (!empty($user['username']) ? $user['username'] : "User-".$userId),
-                'email' => $user['email'],
-                'first_name' => $user['first_name'],
-                'last_name' => $user['last_name']
-            );
-            
-            $output[] = parseTemplate($modx, $tpl, $placeholders);
-            $total++;
-            
-            if ($total >= $display) break;
+        if (!empty($wishlist) && in_array($docid, explode(",", $wishlist))) {
+            $totalVisible++;
         }
-    } catch (\EvolutionCMS\Exceptions\ServiceValidationException $exception) {
-        // Silently skip users with validation errors
-        continue;
-    } catch (\EvolutionCMS\Exceptions\ServiceActionException $exception) {
-        // Silently skip users with action errors
+    } catch (\EvolutionCMS\Exceptions\ServiceValidationException | \EvolutionCMS\Exceptions\ServiceActionException $e) {
         continue;
     }
 }
 
-// Process template type (chunk or inline)
-function parseTemplate($modx, $tpl, $placeholders) {
+// Get users with details
+$shownUsers = 0;
+$mainQuery = "SELECT ua.internalKey, u.username, ua.email, ua.fullname, ua.first_name, ua.last_name 
+          FROM " . $modx->getFullTableName("user_attributes") . " ua
+          JOIN " . $modx->getFullTableName("users") . " u ON u.id = ua.internalKey
+          ORDER BY {$orderByClause}";
+
+$allUsers = $modx->db->query($mainQuery);
+while ($user = $modx->db->getRow($allUsers)) {
+    try {
+        $userData = \UserManager::getValues(["id" => $user["internalKey"]]);
+        $wishlist = !empty($userData[$userTv]) ? $userData[$userTv] : "";
+        
+        if (!empty($wishlist) && in_array($docid, explode(",", $wishlist))) {
+            if (!empty($userData[$privateWishTv]) && $userData[$privateWishTv] == "1") {
+                continue;
+            }
+            
+            if ($shownUsers < $display) {
+                $placeholders = [
+                    "userid" => $user["internalKey"],
+                    "username" => $user["username"],
+                    "fullname" => $user["fullname"] ?: $user["username"],
+                    "email" => $user["email"],
+                    "first_name" => $user["first_name"],
+                    "last_name" => $user["last_name"],
+                ];
+                
+                $output[] = parseTemplate($modx, $tpl, $placeholders);
+                $shownUsers++;
+            }
+        }
+    } catch (\EvolutionCMS\Exceptions\ServiceValidationException | \EvolutionCMS\Exceptions\ServiceActionException $e) {
+        continue;
+    }
+}
+
+function parseTemplate($modx, $tpl, $placeholders)
+{
     if (substr($tpl, 0, 6) == "@CODE:") {
         $content = substr($tpl, 6);
         foreach ($placeholders as $key => $value) {
-            $content = str_replace('[+'.$key.'+]', $value, $content);
+            $content = str_replace("[+" . $key . "+]", $value, $content);
         }
         return $content;
-    } else {
-        return $modx->parseChunk($tpl, $placeholders);
     }
+    return $modx->parseChunk($tpl, $placeholders);
 }
 
-// If no results
-if (empty($output)) return '';
+if (empty($output)) {
+    return "";
+}
 
-// Process outer template
-$outerPlaceholders = array(
-    'total' => $total,
-    'items' => implode("\n", $output)
-);
-
-return parseTemplate($modx, $outerTpl, $outerPlaceholders);
+return parseTemplate($modx, $outerTpl, [
+    "total" => $totalVisible,
+    "visible" => $shownUsers,
+    "hidden" => $totalVisible - $shownUsers,
+    "items" => implode("\n", $output),
+]);
