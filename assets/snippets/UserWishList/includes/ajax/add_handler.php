@@ -36,7 +36,7 @@ if (isset($_POST['add_to_wishlist'])) {
         $tvValues = \UserManager::getValues(['id' => $userId]);
         
         $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
-        $wishListIds = $userWishList ? explode(',', $userWishList) : [];
+        $wishListIds = array_filter(array_map('trim', explode(',', $userWishList)));
         
         if (!in_array($docid, $wishListIds)) {
             $wishListIds[] = $docid;

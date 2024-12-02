@@ -5,15 +5,14 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.8.3
+ * @version   2.8.4
  * @internal  @modx_category UserWishList
- * @lastupdate 02-12-2024 11:15
+ * @lastupdate 02-12-2024 16:40
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
 
 //Language
-
 // Sanitizzazione input e cast a string
 $customLang = isset($customLang) ? (string)$customLang : '';
 $customLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $customLang);
@@ -63,12 +62,16 @@ $loadToastify = isset($loadToastify) ? (int)$loadToastify : 1;
 $totalUsers = getUserWishlistProductCount($docid, $userTv);
 
 // Set placeholders per il conteggio
-$modx->setPlaceholder('wishlist_count', $totalUsers);
-$modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $docid, str_replace('[+count+]', $totalUsers, $counterTpl)));
+$modx->setPlaceholder('wishlist_count_' . $docid, $totalUsers);
+$modx->setPlaceholder('wishlist_count_formatted_' . $docid, str_replace('[+docid+]', $docid, str_replace('[+count+]', $totalUsers, $counterTpl)));
+
+// Genera un ID unico per il bottone
+$buttonId = ($docid == $modx->documentIdentifier) ? 
+    "wishlist-button-main-" . $docid : 
+    "wishlist-button-remote-" . $docid;
 
 $output = '';
 // Verifica se l'utente è loggato
-
 if (!$EVOuserId || !$docid) {
     // Utente non loggato
     if ($ShowToNotLogged) {
@@ -93,7 +96,7 @@ if (!$EVOuserId || !$docid) {
                     data-not-logged-alt="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
                     title="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
                     aria-label="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
-                    id="wishlist-button-' . $docid . '"
+                    id="' . $buttonId . '"
                     disabled',
                     $ToNotLoggedTpl
                 ) . "
@@ -130,7 +133,7 @@ if (!$EVOuserId || !$docid) {
                 data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
                 title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
                 aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
-                id=\"wishlist-button-$docid\"
+                id=\"$buttonId\"
                 $buttonDisabled>
                 $buttonText
             </button>
@@ -157,13 +160,14 @@ if (!$EVOuserId || !$docid) {
                 data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
                 title=\"" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "\"
                 aria-label=\"" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "\"
-                id=\"wishlist-button-$docid\"
+                id=\"$buttonId\"
                 $buttonDisabled>
                 $buttonText
             </button>
         </div>";
     }
 }
+
 // JavaScript (una volta sola)
 if (!defined('WISHLIST_SCRIPT_LOADED')) {
     define('WISHLIST_SCRIPT_LOADED', true);
@@ -195,15 +199,28 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                 if (data.success) {
                     // Aggiorna TUTTI i contatori per questo docid nella pagina
                     document.querySelectorAll(".wishlist-count-" + data.docid).forEach(counter => {
-                        counter.textContent = data.formatted_count;
+                        if (counter.classList.contains("wishlist-counter")) {
+                            counter.textContent = data.formatted_count;
+                        } else {
+                            counter.textContent = data.count;
+                        }
                     });
                     
-                    // Aggiorna anche TUTTI i pulsanti per questo docid
-                    document.querySelectorAll("#wishlist-button-" + data.docid).forEach(button => {
+                    // Aggiorna sia il bottone principale che quelli remoti
+                    document.querySelectorAll(`#wishlist-button-main-${data.docid}, #wishlist-button-remote-${data.docid}`).forEach(button => {
                         button.disabled = true;
                         button.innerHTML = button.dataset.alreadyText;
                         button.title = button.dataset.alreadyAlt;
                         button.setAttribute("aria-label", button.dataset.alreadyAlt);
+                    });
+
+                    // Aggiorna anche eventuali pulsanti di rimozione
+                    const removeButtons = document.querySelectorAll(`#wishlist-remove-button-main-${data.docid}, #wishlist-remove-button-remote-${data.docid}`);
+                    removeButtons.forEach(button => {
+                        button.disabled = false;
+                        button.innerHTML = button.dataset.removeText;
+                        button.title = button.dataset.removeAlt;
+                        button.setAttribute("aria-label", button.dataset.removeAlt);
                     });
                 }
             } catch (error) {
