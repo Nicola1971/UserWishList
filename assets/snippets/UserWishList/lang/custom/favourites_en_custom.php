@@ -46,6 +46,8 @@ $_UWLlang['btnRemoveText'] = 'Remove from Favourites';
 $_UWLlang['btnNotInText'] = 'Not saved in Favourites';
 $_UWLlang['removed_from_wishList'] = 'Removed from Favourites';
 $_UWLlang['item_notin_wishList'] = 'Item not in Favourites';
+$_UWLlang['btnRemoveAlt'] = 'Remove from Favourites';
+$_UWLlang['btnNotInAlt'] = 'Not saved in Favorites';
 
 //MostWished
 $_UWLlang['tv_notfound'] = 'Template Variable not found';

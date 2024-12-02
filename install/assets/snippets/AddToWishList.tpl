@@ -5,14 +5,15 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.8.2
+ * @version   2.8.3
  * @internal  @modx_category UserWishList
- * @lastupdate 01-12-2024 10:30
+ * @lastupdate 02-12-2024 11:15
  */
 
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
 
 //Language
+
 // Sanitizzazione input e cast a string
 $customLang = isset($customLang) ? (string)$customLang : '';
 $customLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $customLang);
@@ -41,7 +42,6 @@ if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . 
     }
 }
 
-
 // Verifica e imposta i parametri
 $docid = (isset($docid) && (int)$docid > 0) ? (int)$docid : $modx->documentIdentifier;
 $EVOuserId = evolutionCMS()->getLoginUserID();
@@ -53,7 +53,7 @@ $btnAddAlt = isset($btnAddAlt) ? $btnAddAlt : $_UWLlang['btnAddAlt'];
 $btnAlreadyText = isset($btnAlreadyText) ? $btnAlreadyText : $_UWLlang['btnAlreadyText'];
 $btnAlreadyAlt = isset($btnAlreadyAlt) ? $btnAlreadyAlt : $_UWLlang['btnAlreadyAlt'];
 $ShowToNotLogged = isset($ShowToNotLogged) ? (int)$ShowToNotLogged : 1;
-$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? $ToNotLoggedTpl : $_UWLlang['ToNotLoggedTpl'];
+$ToNotLoggedTpl = isset($ToNotLoggedTpl) ? (string)$ToNotLoggedTpl : $_UWLlang['ToNotLoggedTpl'];
 $btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : $_UWLlang['btnNotLoggedAlt'];
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
 $counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">' . sprintf($_UWLlang['counter_format'], '[+count+]') . '</span>';
@@ -68,6 +68,7 @@ $modx->setPlaceholder('wishlist_count_formatted', str_replace('[+docid+]', $doci
 
 $output = '';
 // Verifica se l'utente è loggato
+
 if (!$EVOuserId || !$docid) {
     // Utente non loggato
     if ($ShowToNotLogged) {
@@ -76,26 +77,26 @@ if (!$EVOuserId || !$docid) {
             $chunkName = substr($ToNotLoggedTpl, 1);
             $output = $modx->getChunk($chunkName);
         } else {
-            $buttonText = $btnAddText;
-            $buttonDisabled = 'disabled';
-            
             $output = "
             <div class=\"wishlist-container\" data-docid=\"$docid\">
-                <button type=\"button\" 
-                    class=\"add-to-wishlist $btnClass\" 
-                    data-docid=\"$docid\" 
-                    data-userid=\"$userId\" 
-                    data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
-                    data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
-                    data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
-                    data-already-alt='" . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . "'
-                    data-not-logged-alt='" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "'
-                    title=\"" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "\"
-                    aria-label=\"" . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . "\"
-                    id=\"wishlist-button-$docid\"
-                    $buttonDisabled>
-                    $buttonText
-                </button>
+                " . str_replace(
+                    'class="btn btn-light disabled"',
+                    'class="add-to-wishlist ' . $btnClass . '" 
+                    data-docid="' . $docid . '" 
+                    data-userid="' . $userId . '" 
+                    data-toggle="tooltip"
+                    data-placement="top"
+                    data-add-text="' . htmlspecialchars($btnAddText, ENT_QUOTES) . '"
+                    data-already-text="' . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . '"
+                    data-add-alt="' . htmlspecialchars($btnAddAlt, ENT_QUOTES) . '"
+                    data-already-alt="' . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . '"
+                    data-not-logged-alt="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
+                    title="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
+                    aria-label="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
+                    id="wishlist-button-' . $docid . '"
+                    disabled',
+                    $ToNotLoggedTpl
+                ) . "
             </div>";
         }
     }
@@ -120,6 +121,8 @@ if (!$EVOuserId || !$docid) {
                 class=\"add-to-wishlist $btnClass\" 
                 data-docid=\"$docid\" 
                 data-userid=\"$userId\" 
+                data-toggle=\"tooltip\"
+                data-placement=\"top\"
                 data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
                 data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
                 data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
@@ -145,6 +148,8 @@ if (!$EVOuserId || !$docid) {
                 class=\"add-to-wishlist $btnClass\" 
                 data-docid=\"$docid\" 
                 data-userid=\"$userId\" 
+                data-toggle=\"tooltip\"
+                data-placement=\"top\"
                 data-add-text='" . htmlspecialchars($btnAddText, ENT_QUOTES) . "'
                 data-already-text='" . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . "'
                 data-add-alt='" . htmlspecialchars($btnAddAlt, ENT_QUOTES) . "'
@@ -159,7 +164,6 @@ if (!$EVOuserId || !$docid) {
         </div>";
     }
 }
-
 // JavaScript (una volta sola)
 if (!defined('WISHLIST_SCRIPT_LOADED')) {
     define('WISHLIST_SCRIPT_LOADED', true);

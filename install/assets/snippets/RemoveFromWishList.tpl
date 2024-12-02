@@ -5,12 +5,13 @@
  * 
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.0.1
+ * @version   2.0.2
  * @internal  @modx_category UserWishList
- * @lastupdate 30-12-2024 11:43
+ * @lastupdate 02-12-2024 11:33
  */
 
 //Language
+
 // Sanitizzazione input e cast a string
 $customLang = isset($customLang) ? (string)$customLang : '';
 $customLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $customLang);
@@ -47,6 +48,8 @@ $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $btnClass = isset($btnClass) ? $btnClass : 'btn btn-danger';
 $btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : $_UWLlang['btnRemoveText']; //Remove from Wishlist
 $btnNotInText = isset($btnNotInText) ? $btnNotInText : $_UWLlang['btnNotInText']; //Not in Wishlist
+$btnRemoveAlt = isset($btnRemoveAlt) ? $btnRemoveAlt : $_UWLlang['btnRemoveAlt']; //Rimuovi dalla lista dei desideri
+$btnNotInAlt = isset($btnNotInAlt) ? $btnNotInAlt : $_UWLlang['btnNotInAlt']; //Non presente nella lista dei desideri
 $loadToastify = isset($loadToastify) ? (int)$loadToastify : 1; // 1 = carica, 0 = non caricare
 
 // Verifica WishList
@@ -62,6 +65,7 @@ try {
 
 // Button HTML
 $buttonText = $isInWishlist ? $btnRemoveText : $btnNotInText;
+$buttonAlt = $isInWishlist ? $btnRemoveAlt : $btnNotInAlt;
 $buttonDisabled = !$isInWishlist ? 'disabled' : '';
 
 $output = "
@@ -69,8 +73,14 @@ $output = "
     class=\"remove-from-wishlist $btnClass\" 
     data-docid=\"$docid\" 
     data-userid=\"$userId\" 
+    data-toggle=\"tooltip\"
+    data-placement=\"top\"
     data-remove-text='" . htmlspecialchars($btnRemoveText, ENT_QUOTES) . "'
     data-not-in-text='" . htmlspecialchars($btnNotInText, ENT_QUOTES) . "'
+    data-remove-alt='" . htmlspecialchars($btnRemoveAlt, ENT_QUOTES) . "'
+    data-not-in-alt='" . htmlspecialchars($btnNotInAlt, ENT_QUOTES) . "'
+    title=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
+    aria-label=\"" . htmlspecialchars($buttonAlt, ENT_QUOTES) . "\"
     id=\"wishlist-remove-button-$docid\"
     $buttonDisabled>
     $buttonText
@@ -89,8 +99,6 @@ if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
     }
     
     $scriptoutput .= '
-    <link rel="stylesheet" type="text/css" href="/assets/snippets/UserWishList/libs/toastify/toastify.min.css">
-	<script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         async function removeFromWishlist(button) {
@@ -116,15 +124,25 @@ if (!defined('REMOVE_WISHLIST_SCRIPT_LOADED')) {
                     if (targetButton) {
                         targetButton.disabled = true;
                         targetButton.innerHTML = targetButton.dataset.notInText;
+                        targetButton.title = targetButton.dataset.notInAlt;
+                        targetButton.setAttribute("aria-label", targetButton.dataset.notInAlt);
                     }
                     
                     // Se esiste il bottone di aggiunta, lo riabilitiamo
                     const addButton = document.getElementById("wishlist-button-" + data.docid);
                     if (addButton) {
                         addButton.disabled = false;
-                        // Usa il testo salvato nel data attribute se disponibile
-                        addButton.innerHTML = addButton.dataset.addText || "Aggiungi a WishList";
+                        addButton.innerHTML = addButton.dataset.addText;
+                        addButton.title = addButton.dataset.addAlt;
+                        addButton.setAttribute("aria-label", addButton.dataset.addAlt);
                     }
+                    
+                    // Aggiorna i contatori se presenti
+                    document.querySelectorAll(".wishlist-count-" + data.docid).forEach(counter => {
+                        if (data.formatted_count) {
+                            counter.textContent = data.formatted_count;
+                        }
+                    });
                     
                     Toastify({
                         text: data.message,
