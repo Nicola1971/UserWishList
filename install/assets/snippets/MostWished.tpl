@@ -7,7 +7,7 @@
  * @category  snippet
  * @version   1.6.1
  * @internal  @modx_category UserWishList
- * @lastupdate 30-12-2024 11:44
+ * @lastupdate 30-11-2024 11:44
  */
 
 //Language
