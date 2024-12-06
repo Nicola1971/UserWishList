@@ -59,6 +59,7 @@ function parsePlaceholders($tpl, $data) {
 $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
+$outerClass = isset($outerClass) ? $outerClass : 'container';
 $tpl = isset($tpl) ? $tpl : '@CODE:
     <div class="wishlist-item" id="wishlist-item-[+id+]">
         <h3>[+pagetitle+]</h3>
@@ -256,7 +257,7 @@ try {
         </style>';
         $modx->regClientScript($script);
     }
-    return $counter . $exportForm . '<div class="container wishlist-container">' . $output . '</div>';
+    return $counter . $exportForm . '<div class="' .$outerClass. ' wishlist-container">' . $output . '</div>';
 }
 catch(\Exception $e) {
     return '' . $_UWLlang['error'] . ': ' . $e->getMessage();
