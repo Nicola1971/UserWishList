@@ -5,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.6
+ * @version   2.6.1
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 17:19
+ * @lastupdate 07-12-2024 19:26
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -93,10 +93,10 @@ $pdf_Title = $_UWLlang['pdf_title'];
 $pdfTitle = isset($pdfTitle) ? $pdfTitle : $pdf_Title;
 $pdfHeaderTpl = isset($pdfHeaderTpl) ? $pdfHeaderTpl : '@CODE: 
     <h1>[+title+]</h1>
-    <p>' . $_UWLlang['exported_on'] . ' [+date+]</p>';
+    <p>' . $_UWLlang['exported_on'] . ' [+date+]</p></br>';
 $pdfItemTpl = isset($pdfItemTpl) ? $pdfItemTpl : '@CODE:
     <h2>[+pagetitle+]</h2>
-    [+summary+]</p>`
+    [+summary+]</p>
     [+url:ifNotEmpty=`<p>Link: [+url+]</p>`+]';
 // Gestione dell'esportazione
 if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
@@ -173,7 +173,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
                 fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
                 fputcsv($output, [$_UWLlang['title'], $_UWLlang['description'], $_UWLlang['URL']]);
                 foreach ($items as $item) {
-                    fputcsv($output, [$item['pagetitle'], $item['introtext'], $modx->makeUrl($item['id'], '', '', 'full') ]);
+                    fputcsv($output, [$item['pagetitle'], $item['summary'], $modx->makeUrl($item['id'], '', '', 'full') ]);
                 }
                 fclose($output);
                 exit;
