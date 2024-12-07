@@ -1,3 +1,4 @@
+<?php
 /**
  * UserWishList
  *
@@ -5,37 +6,52 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.5.1
+ * @version   2.6
  * @internal  @modx_category UserWishList
- * @lastupdate 30-12-2024 11:42
+ * @lastupdate 07-12-2024 10:50
  */
-
 //Language
 // Sanitizzazione input e cast a string
 $customLang = isset($customLang) ? (string)$customLang : '';
 $customLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $customLang);
 $customLang = basename($customLang);
-
 // Inizializzazione array lingue
 $_UWLlang = [];
-
 // Percorso base per i file di lingua
 $langBasePath = MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/';
-
 // Caricamento file lingua personalizzato
 if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . '.php')) {
-    include($langBasePath . 'custom/' . $customLang . '.php');
+    include ($langBasePath . 'custom/' . $customLang . '.php');
 } else {
     // Carica sempre l'inglese come fallback
-    include($langBasePath . 'en.php');
-    
+    include ($langBasePath . 'en.php');
     // Carica la lingua del manager se disponibile e diversa dall'inglese
     $managerLang = $modx->config['manager_language'];
     $managerLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $managerLang);
     $managerLang = basename($managerLang);
-    
     if ($managerLang !== 'en' && file_exists($langBasePath . $managerLang . '.php')) {
-        include($langBasePath . $managerLang . '.php');
+        include ($langBasePath . $managerLang . '.php');
+    }
+}
+// Funzione helper per il bottone di rimozione
+if (!function_exists('UWL_generateRemoveButton')) {
+    function UWL_generateRemoveButton($params) {
+        return "
+        <button type=\"button\" 
+            class=\"remove-from-wishlist {$params['btnClass']}\" 
+            data-docid=\"{$params['docid']}\" 
+            data-userid=\"{$params['userId']}\" 
+            data-user-tv=\"{$params['userTv']}\"
+            data-toggle=\"tooltip\"
+            data-placement=\"top\"
+            data-remove-text='" . htmlspecialchars($params['removeText'], ENT_QUOTES) . "'
+            data-not-in-text='" . htmlspecialchars($params['notInText'], ENT_QUOTES) . "'
+            data-remove-alt='" . htmlspecialchars($params['removeAlt'], ENT_QUOTES) . "'
+            data-not-in-alt='" . htmlspecialchars($params['notInAlt'], ENT_QUOTES) . "'
+            title=\"" . htmlspecialchars($params['removeAlt'], ENT_QUOTES) . "\"
+            aria-label=\"" . htmlspecialchars($params['removeAlt'], ENT_QUOTES) . "\">
+            {$params['removeText']}
+        </button>";
     }
 }
 // Funzioni helper per il PDF
@@ -59,13 +75,20 @@ function parsePlaceholders($tpl, $data) {
 $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
+$loadToastify = isset($loadToastify) ? (int)$loadToastify : 1;
 $outerClass = isset($outerClass) ? $outerClass : 'container';
 $tpl = isset($tpl) ? $tpl : '@CODE:
     <div class="wishlist-item" id="wishlist-item-[+id+]">
         <h3>[+pagetitle+]</h3>
         <p>[+introtext+]</p>
-        [!RemoveFromWishList? &docid=`[+id+]`!]
+        [+wishlist_remove_button+]
     </div>';
+// Parametri per il bottone di rimozione
+$btnRemoveClass = isset($btnRemoveClass) ? $btnRemoveClass : 'btn btn-danger';
+$btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : $_UWLlang['btnRemoveText'];
+$btnRemoveAlt = isset($btnRemoveAlt) ? $btnRemoveAlt : $_UWLlang['btnRemoveAlt'];
+$btnNotInText = isset($btnNotInText) ? $btnNotInText : $_UWLlang['btnNotInText'];
+$btnNotInAlt = isset($btnNotInAlt) ? $btnNotInAlt : $_UWLlang['btnNotInAlt'];
 $showCounter = isset($showCounter) ? (int)$showCounter : 0; // 1 = mostra, 0 = nascondi
 $exportFormats = isset($exportFormats) ? explode(',', $exportFormats) : ['pdf', 'csv'];
 $showExport = isset($showExport) ? (int)$showExport : 1; // 1 = mostra, 0 = nascondi
@@ -80,7 +103,6 @@ $pdfItemTpl = isset($pdfItemTpl) ? $pdfItemTpl : '@CODE:
     <h2>[+pagetitle+]</h2>
     [+introtext:ifNotEmpty=`<p>[+introtext+]</p>`+]
     [+url:ifNotEmpty=`<p>Link: [+url+]</p>`+]';
-
 // Gestione dell'esportazione
 if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
     try {
@@ -88,6 +110,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
         if (!in_array($format, $exportFormats)) {
             throw new Exception('' . $_UWLlang['format_not_supported'] . '');
         }
+        $modx->logEvent(0, 1, "Required Fields: " . print_r($requiredFields, true), 'WishList Export Debug - Fields');
         $tvValues = \UserManager::getValues(['id' => $userId]);
         $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
         if (empty($userWishList)) {
@@ -99,7 +122,13 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
         // Rimuovi i campi calcolati dalla query
         $queryFields = array_diff($requiredFields, $calculatedFields);
         // Prepara i parametri per DocLister
-        $params = array('documents' => $userWishList, 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => implode(',', $queryFields), 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'api' => implode(',', $queryFields));
+        $params = array('documents' => $userWishList, 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => 'id,pagetitle,introtext', // Specifichiamo esplicitamente i campi
+        'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'api' => 'id,pagetitle,introtext', // Stessi campi in api
+        'debug' => 1, 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
+            // Genera il bottone per questo elemento
+            $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'notInText' => $btnNotInText, 'removeAlt' => $btnRemoveAlt, 'notInAlt' => $btnNotInAlt]);
+            return $data;
+        });
         $docs = $modx->runSnippet('DocLister', $params);
         $items = json_decode($docs, true);
         // Aggiungi i campi calcolati dopo aver ottenuto i dati
@@ -173,91 +202,149 @@ try {
         return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
     // Prepara i parametri per DocLister
-    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => isset($selectFields) ? $selectFields : 'id,pagetitle,introtext', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC');
+    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => isset($selectFields) ? $selectFields : 'id,pagetitle,introtext', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
+        // Genera il bottone per questo elemento
+        $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'notInText' => $btnNotInText, 'removeAlt' => $btnRemoveAlt, 'notInAlt' => $btnNotInAlt]);
+        return $data;
+    });
     // Form di esportazione
     $exportForm = '';
     if ($showExport) {
         $exportForm = '
-    <div class="container">
-        <div class="wishlist-export mb-4">
-            <form method="post" class="d-flex gap-2 align-items-center">
-                <select name="format" class="form-select form-control" style="width: auto;">
-                    ' . ($exportFormats ? implode('', array_map(function ($format) {
+        <div class="container">
+            <div class="wishlist-export mb-4">
+                <form method="post" class="d-flex gap-2 align-items-center">
+                    <select name="format" class="form-select form-control" style="width: auto;">
+                        ' . ($exportFormats ? implode('', array_map(function ($format) {
             return '<option value="' . $format . '">' . strtoupper($format) . '</option>';
         }, $exportFormats)) : '') . '
-                </select>
-                <button type="submit" name="export_wishlist" class="ml-2 btn btn-primary">
-                    ' . $_UWLlang['export_wishList'] . '
-                </button>
-            </form>
-        </div>
-    </div>';
+                    </select>
+                    <button type="submit" name="export_wishlist" class="ml-2 btn btn-primary">
+                        ' . $_UWLlang['export_wishList'] . '
+                    </button>
+                </form>
+            </div>
+        </div>';
     }
     // Counter
-	if ($showCounter) {
-    $counter = '<div class="wishlist-counter mb-4">' . $_UWLlang['saved_elements'] . ': <span class="badge bg-info">' . $totalItems . '</span></div>';
+    $counter = '';
+    if ($showCounter) {
+        $counter = '<div class="wishlist-counter mb-4">' . $_UWLlang['saved_elements'] . ': <span class="badge bg-info">' . $totalItems . '</span></div>';
     }
     // Esegui DocLister
     $output = $modx->runSnippet('DocLister', $params);
     // Aggiungi lo script per la rimozione dinamica e aggiornamento counter
     if (!defined('WISHLIST_REMOVE_HANDLER_LOADED')) {
         define('WISHLIST_REMOVE_HANDLER_LOADED', true);
+        // Prepariamo solo le traduzioni necessarie per UserWishList
+        $wishlistTranslations = json_encode(['removed' => $_UWLlang['removed_from_wishList'], 'error' => $_UWLlang['error'], 'empty' => $_UWLlang['your_wishList_is_empty']]);
         $script = '
         <script>
+		const wishlistMessages = ' . $wishlistTranslations . ';
         document.addEventListener("DOMContentLoaded", function() {
-            function updateCounter() {
-                const items = document.querySelectorAll(".wishlist-item");
-                const counter = document.querySelector(".wishlist-counter .badge");
-                if (counter) {
-                    counter.textContent = items.length;
-                }
+    function updateCounter() {
+        const items = document.querySelectorAll(".wishlist-item");
+        const counter = document.querySelector(".wishlist-counter .badge");
+        if (counter) {
+            counter.textContent = items.length;
+        }
+        
+        if (items.length === 0) {
+            document.querySelector(".wishlist-export")?.remove();
+            document.querySelector(".wishlist-counter")?.remove();
+            const container = document.querySelector(".wishlist-container");
+            if (container) {
+                container.innerHTML = wishlistMessages.empty;
+            }
+        }
+    }
+
+    async function removeFromWishlist(button) {
+        const itemId = button.dataset.docid;
+        const itemContainer = document.getElementById("wishlist-item-" + itemId);
+        
+        if (!itemContainer) return;
+
+        try {
+            const response = await fetch("/assets/snippets/UserWishList/includes/ajax/remove_handler.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    remove_from_wishlist: 1,
+                    docid: button.dataset.docid,
+                    userId: button.dataset.userid,
+                    userTv: button.dataset.userTv
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                itemContainer.style.transition = "opacity 0.5s ease";
+                itemContainer.style.opacity = "0";
                 
-                // Se la lista è vuota
-                if (items.length === 0) {
-                    document.querySelector(".wishlist-export")?.remove();
-                    document.querySelector(".wishlist-counter")?.remove();
+                setTimeout(() => {
+                    itemContainer.remove();
+                    updateCounter();
+                }, 500);
+
+                if (typeof Toastify !== "undefined") {
+                    Toastify({
+                        text: wishlistMessages.removed,
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "left",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                }
+            } else {
+                if (typeof Toastify !== "undefined") {
+                    Toastify({
+                        text: wishlistMessages.error,
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "left",
+                        style: {
+                            background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        }
+                    }).showToast();
                 }
             }
-            
-            // Intercetta il click sui bottoni di rimozione
-            document.addEventListener("click", function(e) {
-                if (e.target && e.target.classList.contains("remove-from-wishlist")) {
-                    const itemId = e.target.dataset.docid;
-                    const itemContainer = document.getElementById("wishlist-item-" + itemId);
-                    
-                    if (itemContainer) {
-                        // Aggiungi una classe per l\'animazione di fade out
-                        itemContainer.style.transition = "opacity 0.5s ease";
-                        itemContainer.style.opacity = "0";
-                        
-                        // Rimuovi l\'elemento dopo l\'animazione
-                        setTimeout(() => {
-                            itemContainer.remove();
-                            updateCounter();
-                            
-                            // Se non ci sono più elementi, mostra il messaggio
-                            const remainingItems = document.querySelectorAll(".wishlist-item");
-                            if (remainingItems.length === 0) {
-                                const container = document.querySelector(".wishlist-container");
-                                if (container) {
-                                    container.innerHTML = "<p>La tua WishList è vuota</p>";
-                                }
-                            }
-                        }, 500);
+        } catch (error) {
+            console.error("Error:", error);
+            if (typeof Toastify !== "undefined") {
+                Toastify({
+                    text: wishlistMessages.error,
+                    duration: 3000,
+                    gravity: "bottom",
+                    position: "left",
+                    style: {
+                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
                     }
-                }
-            });
-        });
-        </script>
-        <style>
-        .wishlist-item {
-            opacity: 1;
-            transition: opacity 0.5s ease;
+                }).showToast();
+            }
         }
-        </style>';
+    }
+    
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.classList.contains("remove-from-wishlist")) {
+            removeFromWishlist(e.target);
+        }
+    });
+});
+</script>';
+        // Carica Toastify se necessario
+        if ($loadToastify) {
+            $modx->regClientCSS("/assets/snippets/UserWishList/libs/toastify/toastify.min.css");
+            $modx->regClientScript("/assets/snippets/UserWishList/libs/toastify/toastify.min.js");
+        }
         $modx->regClientScript($script);
     }
-    return $counter . $exportForm . '<div class="' .$outerClass. ' wishlist-container">' . $output . '</div>';
+    return $counter . $exportForm . '<div class="' . $outerClass . ' wishlist-container">' . $output . '</div>';
 }
 catch(\Exception $e) {
     return '' . $_UWLlang['error'] . ': ' . $e->getMessage();
