@@ -7,7 +7,7 @@
  * @category  snippet
  * @version   2.6
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 15:11
+ * @lastupdate 07-12-2024 17:19
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -44,9 +44,7 @@ if (!function_exists('UWL_generateRemoveButton')) {
             data-toggle=\"tooltip\"
             data-placement=\"top\"
             data-remove-text='" . htmlspecialchars($params['removeText'], ENT_QUOTES) . "'
-            data-not-in-text='" . htmlspecialchars($params['notInText'], ENT_QUOTES) . "'
             data-remove-alt='" . htmlspecialchars($params['removeAlt'], ENT_QUOTES) . "'
-            data-not-in-alt='" . htmlspecialchars($params['notInAlt'], ENT_QUOTES) . "'
             title=\"" . htmlspecialchars($params['removeAlt'], ENT_QUOTES) . "\"
             aria-label=\"" . htmlspecialchars($params['removeAlt'], ENT_QUOTES) . "\">
             {$params['removeText']}
@@ -86,8 +84,6 @@ $tpl = isset($tpl) ? $tpl : '@CODE:
 $btnRemoveClass = isset($btnRemoveClass) ? $btnRemoveClass : 'btn btn-danger';
 $btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : $_UWLlang['btnRemoveText'];
 $btnRemoveAlt = isset($btnRemoveAlt) ? $btnRemoveAlt : $_UWLlang['btnRemoveAlt'];
-$btnNotInText = isset($btnNotInText) ? $btnNotInText : $_UWLlang['btnNotInText'];
-$btnNotInAlt = isset($btnNotInAlt) ? $btnNotInAlt : $_UWLlang['btnNotInAlt'];
 $showCounter = isset($showCounter) ? (int)$showCounter : 0; // 1 = mostra, 0 = nascondi
 $exportFormats = isset($exportFormats) ? explode(',', $exportFormats) : ['pdf', 'csv'];
 $showExport = isset($showExport) ? (int)$showExport : 1; // 1 = mostra, 0 = nascondi
@@ -122,8 +118,8 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
         $queryFields = array_diff($requiredFields, $calculatedFields);
         // Prepara i parametri per DocLister
         $params = array('documents' => $userWishList, 'tvList' => isset($tvList) ? $tvList : '', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'api' => 'id,pagetitle,introtext,content,description', 'summary' => 'notags,len:300', // Aggiungiamo questo
-        'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
-            $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'notInText' => $btnNotInText, 'removeAlt' => $btnRemoveAlt, 'notInAlt' => $btnNotInAlt]);
+        'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt) {
+            $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'removeAlt' => $btnRemoveAlt]);
             return $data;
         });
         $docs = $modx->runSnippet('DocLister', $params);
@@ -199,9 +195,9 @@ try {
         return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
     // Prepara i parametri per DocLister
-    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'summary' => isset($summary) ? $summary : 'notags,len:300', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
+    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'summary' => isset($summary) ? $summary : 'notags,len:300', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt) {
         // Genera il bottone per questo elemento
-        $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'notInText' => $btnNotInText, 'removeAlt' => $btnRemoveAlt, 'notInAlt' => $btnNotInAlt]);
+        $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'removeAlt' => $btnRemoveAlt]);
         return $data;
     });
     // Form di esportazione

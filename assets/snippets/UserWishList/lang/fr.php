@@ -45,9 +45,7 @@ $_UWLlang['counter_update_error'] = 'Erreur lors de la mise à jour des compteur
 $_UWLlang['btnRemoveText'] = 'Retirer de la liste de souhaits';
 $_UWLlang['btnNotInText'] = 'Pas dans la liste de souhaits';
 $_UWLlang['removed_from_wishList'] = 'Retiré de la liste de souhaits';
-$_UWLlang['item_notin_wishList'] = 'Élément non présent dans la liste de souhaits';
 $_UWLlang['btnRemoveAlt'] = 'Retirer de la liste de souhaits';
-$_UWLlang['btnNotInAlt'] = 'Non présent dans la liste de souhaits';
 
 //MostWished
 $_UWLlang['tv_notfound'] = 'Variable de modèle non trouvée';

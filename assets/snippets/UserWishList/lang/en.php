@@ -45,9 +45,7 @@ $_UWLlang['counter_update_error'] = 'Error updating counters';
 $_UWLlang['btnRemoveText'] = 'Remove from WishList';
 $_UWLlang['btnNotInText'] = 'Not in WishList';
 $_UWLlang['removed_from_wishList'] = 'Removed from WishList';
-$_UWLlang['item_notin_wishList'] = 'Item not in WishList';
 $_UWLlang['btnRemoveAlt'] = 'Remove from wishlist';
-$_UWLlang['btnNotInAlt'] = 'Not in wishlist';
 
 //MostWished
 $_UWLlang['tv_notfound'] = 'Template Variable not found';

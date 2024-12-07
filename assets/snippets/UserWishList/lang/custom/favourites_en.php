@@ -44,9 +44,7 @@ $_UWLlang = array(
     'btnRemoveText' => 'Remove from Wish List',
     'btnNotInText' => 'Not saved in Wish List',
     'removed_from_wishList' => 'Removed from Wish List',
-    'item_notin_wishList' => 'Item not in Wish List',
     'btnRemoveAlt' => 'Remove from Wish List',
-    'btnNotInAlt' => 'Not in Wish List',
     //MostWished
     'tv_notfound' => 'Template Variable not found'
 );

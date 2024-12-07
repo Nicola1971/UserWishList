@@ -45,9 +45,7 @@ $_UWLlang['counter_update_error'] = 'Fout bij het bijwerken van de tellers';
 $_UWLlang['btnRemoveText'] = 'Verwijderen uit verlanglijst';
 $_UWLlang['btnNotInText'] = 'Niet in verlanglijst';
 $_UWLlang['removed_from_wishList'] = 'Verwijderd uit verlanglijst';
-$_UWLlang['item_notin_wishList'] = 'Item staat niet in verlanglijst';
 $_UWLlang['btnRemoveAlt'] = 'Verwijderen uit verlanglijstje';
-$_UWLlang['btnNotInAlt'] = 'Niet in verlanglijstje';
 
 //MostWished
 $_UWLlang['tv_notfound'] = 'Templatevariabele niet gevonden';
