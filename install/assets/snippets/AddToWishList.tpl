@@ -1,3 +1,4 @@
+<?php
 /**
  * AddToWishList
  *
@@ -7,25 +8,24 @@
  * @category  snippet
  * @version   2.8.5
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 10:54
+ * @lastupdate 07-12-2024 16:57
  */
+
+// 1. INCLUSIONE DIPENDENZE
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
-//Language
-// Sanitizzazione input e cast a string
+
+// 2. GESTIONE LINGUA
 $customLang = isset($customLang) ? (string)$customLang : '';
 $customLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $customLang);
 $customLang = basename($customLang);
-// Inizializzazione array lingue
+
 $_UWLlang = [];
-// Percorso base per i file di lingua
 $langBasePath = MODX_BASE_PATH . 'assets/snippets/UserWishList/lang/';
-// Caricamento file lingua personalizzato
+
 if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . '.php')) {
     include ($langBasePath . 'custom/' . $customLang . '.php');
 } else {
-    // Carica sempre l'inglese come fallback
     include ($langBasePath . 'en.php');
-    // Carica la lingua del manager se disponibile e diversa dall'inglese
     $managerLang = $modx->config['manager_language'];
     $managerLang = preg_replace('/[^a-zA-Z0-9_-]/', '', $managerLang);
     $managerLang = basename($managerLang);
@@ -33,10 +33,14 @@ if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . 
         include ($langBasePath . $managerLang . '.php');
     }
 }
-// Funzione helper per generare il bottone
+
+// 3. DEFINIZIONE FUNZIONI
 if (!function_exists('UWL_generateWishlistButton')) {
     function UWL_generateWishlistButton($params) {
-        $tooltipTitle = $params['disabled'] ? ($params['isLogged'] ? $params['alreadyAlt'] : $params['notLoggedAlt']) : $params['addAlt'];
+        $tooltipTitle = $params['disabled'] ? 
+            ($params['isLogged'] ? $params['alreadyAlt'] : $params['notLoggedAlt']) : 
+            $params['addAlt'];
+        
         return "
         <div class=\"wishlist-container\" data-docid=\"{$params['docid']}\">
             <button type=\"button\" 
@@ -60,7 +64,8 @@ if (!function_exists('UWL_generateWishlistButton')) {
         </div>";
     }
 }
-// Verifica e imposta i parametri
+
+// 4. SETUP VARIABILI
 $docid = (isset($docid) && (int)$docid > 0) ? (int)$docid : $modx->documentIdentifier;
 $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
@@ -76,123 +81,178 @@ $btnNotLoggedAlt = isset($btnNotLoggedAlt) ? $btnNotLoggedAlt : $_UWLlang['btnNo
 $showCounter = isset($showCounter) ? (int)$showCounter : 1;
 $counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">' . sprintf($_UWLlang['counter_format'], '[+count+]') . '</span>';
 $loadToastify = isset($loadToastify) ? (int)$loadToastify : 1;
-// Ottieni il numero di utenti che hanno il prodotto nella loro wishlist
-$totalUsers = getUserWishlistProductCount($docid, $userTv);
-// Set placeholders per il conteggio
-$modx->setPlaceholder('wishlist_count_' . $docid, $totalUsers);
-$modx->setPlaceholder('wishlist_count_formatted_' . $docid, str_replace('[+docid+]', $docid, str_replace('[+count+]', $totalUsers, $counterTpl)));
+
 // Genera un ID unico per il bottone
-$buttonId = ($docid == $modx->documentIdentifier) ? "wishlist-button-main-" . $docid : "wishlist-button-remote-" . $docid;
+$buttonId = ($docid == $modx->documentIdentifier) ? 
+    "wishlist-button-main-" . $docid : 
+    "wishlist-button-remote-" . $docid;
+
+// Conteggio elementi
+$totalUsers = getUserWishlistProductCount($docid, $userTv);
+$modx->setPlaceholder('wishlist_count_' . $docid, $totalUsers);
+$modx->setPlaceholder('wishlist_count_formatted_' . $docid, 
+    str_replace('[+docid+]', $docid, 
+    str_replace('[+count+]', $totalUsers, $counterTpl))
+);
+
 $output = '';
-// Verifica se l'utente è loggato
+
+// 5. LOGICA DI CONTROLLO
 if (!$EVOuserId || !$docid) {
     // Utente non loggato
     if ($ShowToNotLogged) {
-        if (substr($ToNotLoggedTpl, 0, 1) === '@') {
-            $chunkName = substr($ToNotLoggedTpl, 1);
-            $output = $modx->getChunk($chunkName);
+        if ($modx->getChunk($ToNotLoggedTpl)) {
+            // Se è un chunk
+            $output = $modx->getChunk($ToNotLoggedTpl);
         } else {
-            $output = UWL_generateWishlistButton(['docid' => $docid, 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnClass, 'text' => $btnAddText, 'addText' => $btnAddText, 'alreadyText' => $btnAlreadyText, 'addAlt' => $btnAddAlt, 'alreadyAlt' => $btnAlreadyAlt, 'notLoggedAlt' => $btnNotLoggedAlt, 'buttonId' => $buttonId, 'disabled' => true, 'isLogged' => false]);
+            // Usa il valore diretto (dal parametro o dal language file)
+            $output = $ToNotLoggedTpl;
         }
     }
 } else {
     try {
-        // Otteniamo i valori correnti dell'utente
+        // Utente loggato
         $tvValues = \UserManager::getValues(['id' => $userId]);
-        // Verifica WishList
         $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
         $wishListIds = $userWishList ? explode(',', $userWishList) : [];
         $isInWishlist = in_array($docid, $wishListIds);
-        $output = UWL_generateWishlistButton(['docid' => $docid, 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnClass, 'text' => $isInWishlist ? $btnAlreadyText : $btnAddText, 'addText' => $btnAddText, 'alreadyText' => $btnAlreadyText, 'addAlt' => $btnAddAlt, 'alreadyAlt' => $btnAlreadyAlt, 'notLoggedAlt' => $btnNotLoggedAlt, 'buttonId' => $buttonId, 'disabled' => $isInWishlist, 'isLogged' => true]);
-    }
-    catch(\Exception $e) {
-        $output = UWL_generateWishlistButton(['docid' => $docid, 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnClass, 'text' => $btnAddText, 'addText' => $btnAddText, 'alreadyText' => $btnAlreadyText, 'addAlt' => $btnAddAlt, 'alreadyAlt' => $btnAlreadyAlt, 'notLoggedAlt' => $btnNotLoggedAlt, 'buttonId' => $buttonId, 'disabled' => true, 'isLogged' => true]);
+        
+        $output = UWL_generateWishlistButton([
+            'docid' => $docid,
+            'userId' => $userId,
+            'userTv' => $userTv,
+            'btnClass' => $btnClass,
+            'text' => $isInWishlist ? $btnAlreadyText : $btnAddText,
+            'addText' => $btnAddText,
+            'alreadyText' => $btnAlreadyText,
+            'addAlt' => $btnAddAlt,
+            'alreadyAlt' => $btnAlreadyAlt,
+            'notLoggedAlt' => $btnNotLoggedAlt,
+            'buttonId' => $buttonId,
+            'disabled' => $isInWishlist,
+            'isLogged' => true
+        ]);
+    } catch(\Exception $e) {
+        $output = UWL_generateWishlistButton([
+            'docid' => $docid,
+            'userId' => $userId,
+            'userTv' => $userTv,
+            'btnClass' => $btnClass,
+            'text' => $btnAddText,
+            'addText' => $btnAddText,
+            'alreadyText' => $btnAlreadyText,
+            'addAlt' => $btnAddAlt,
+            'alreadyAlt' => $btnAlreadyAlt,
+            'notLoggedAlt' => $btnNotLoggedAlt,
+            'buttonId' => $buttonId,
+            'disabled' => true,
+            'isLogged' => true
+        ]);
     }
 }
-// JavaScript (una volta sola)
+
+// 6. GESTIONE JAVASCRIPT
 if (!defined('WISHLIST_SCRIPT_LOADED')) {
     define('WISHLIST_SCRIPT_LOADED', true);
-    // Definisci le traduzioni una volta sola
-    $wishlistTranslations = json_encode(['error' => $_UWLlang['toast_error'], 'counterUpdateError' => $_UWLlang['counter_update_error'], 'added' => $_UWLlang['added_to_wishList'], 'alreadyInList' => $_UWLlang['already_in_wishList']]);
-    // Inizializza $scriptoutput una sola volta
+    
+    $wishlistTranslations = json_encode([
+        'error' => $_UWLlang['toast_error'],
+        'counterUpdateError' => $_UWLlang['counter_update_error'],
+        'added' => $_UWLlang['added_to_wishList'],
+        'alreadyInList' => $_UWLlang['already_in_wishList']
+    ]);
+    
     $scriptoutput = '';
-    // Aggiungi Toastify se necessario
+    
     if ($loadToastify) {
-        $scriptoutput.= '
+        $scriptoutput .= '
         <link rel="stylesheet" type="text/css" href="/assets/snippets/UserWishList/libs/toastify/toastify.min.css">
         <script src="/assets/snippets/UserWishList/libs/toastify/toastify.min.js"></script>';
     }
-    // Aggiungi lo script principale
-    $scriptoutput.= '
+    
+    $scriptoutput .= '
     <script>
     const wishlistMessages = ' . $wishlistTranslations . ';
-	const customLang = "' . $customLang . '"; 
+    const customLang = "' . $customLang . '";
+    
     document.addEventListener("DOMContentLoaded", function() {
-    async function updateWishlistCounts(docid) {
-        try {
-            const button = document.querySelector(`#wishlist-button-main-${docid}, #wishlist-button-remote-${docid}`);
-            const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    get_wishlist_count: 1,
-                    docid: docid,
-                    userTv: button.dataset.userTv
-                })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                document.querySelectorAll(".wishlist-count-" + data.docid).forEach(counter => {
-                    counter.textContent = data.formatted_count;
+        async function updateWishlistCounts(docid) {
+            try {
+                const button = document.querySelector(`#wishlist-button-main-${docid}, #wishlist-button-remote-${docid}`);
+                const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                        get_wishlist_count: 1,
+                        docid: docid,
+                        userTv: button.dataset.userTv
+                    })
                 });
                 
-                document.querySelectorAll(`#wishlist-button-main-${data.docid}, #wishlist-button-remote-${data.docid}`).forEach(button => {
-                    button.disabled = true;
-                    button.innerHTML = button.dataset.alreadyText;
-                });
+                const data = await response.json();
+                if (data.success) {
+                    document.querySelectorAll(".wishlist-count-" + data.docid).forEach(counter => {
+                        counter.textContent = data.formatted_count;
+                    });
+                    
+                    document.querySelectorAll(`#wishlist-button-main-${data.docid}, #wishlist-button-remote-${data.docid}`).forEach(button => {
+                        button.disabled = true;
+                        button.innerHTML = button.dataset.alreadyText;
+                    });
+                }
+            } catch (error) {
+                console.error(wishlistMessages.counterUpdateError, error);
             }
-        } catch (error) {
-            console.error(wishlistMessages.counterUpdateError, error);
         }
-    }
 
-    async function addToWishlist(button) {
-        if (button.disabled) return;
-        
-        try {
-            const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    add_to_wishlist: 1,
-                    docid: button.dataset.docid,
-                    userId: button.dataset.userid,
-                    userTv: button.dataset.userTv,
-                    customLang: customLang  
-                })
-            });
+        async function addToWishlist(button) {
+            if (button.disabled) return;
             
-            const data = await response.json();
-            if (data.success) {
-                updateWishlistCounts(data.docid);
+            try {
+                const response = await fetch("/assets/snippets/UserWishList/includes/ajax/add_handler.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                        add_to_wishlist: 1,
+                        docid: button.dataset.docid,
+                        userId: button.dataset.userid,
+                        userTv: button.dataset.userTv,
+                        customLang: customLang
+                    })
+                });
                 
+                const data = await response.json();
+                if (data.success) {
+                    updateWishlistCounts(data.docid);
+                    
+                    Toastify({
+                        text: data.message,
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "left",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                } else {
+                    Toastify({
+                        text: data.message || wishlistMessages.error,
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "left",
+                        style: {
+                            background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        }
+                    }).showToast();
+                }
+            } catch (error) {
+                console.error("Errore:", error);
                 Toastify({
-                    text: data.message,
-                    duration: 3000,
-                    gravity: "bottom",
-                    position: "left",
-                    style: {
-                        background: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }
-                }).showToast();
-            } else {
-                Toastify({
-                    text: data.message || wishlistMessages.error,
+                    text: wishlistMessages.error,
                     duration: 3000,
                     gravity: "bottom",
                     position: "left",
@@ -201,26 +261,17 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                     }
                 }).showToast();
             }
-        } catch (error) {
-            console.error("Errore:", error);
-            Toastify({
-                text: wishlistMessages.error,
-                duration: 3000,
-                gravity: "bottom",
-                position: "left",
-                style: {
-                    background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                }
-            }).showToast();
         }
-    }
 
-    // Event Listeners
-    document.querySelectorAll(".add-to-wishlist").forEach(button => {
-        button.addEventListener("click", () => addToWishlist(button));
+        // Event Listeners
+        document.querySelectorAll(".add-to-wishlist").forEach(button => {
+            button.addEventListener("click", () => addToWishlist(button));
+        });
     });
-});
-</script>';
+    </script>';
+    
     $modx->regClientScript($scriptoutput);
 }
+
+// 7. OUTPUT
 return $output;
