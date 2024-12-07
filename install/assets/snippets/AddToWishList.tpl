@@ -1,3 +1,4 @@
+<?php
 /**
  * AddToWishList
  *
@@ -7,7 +8,7 @@
  * @category  snippet
  * @version   2.8.5
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 16:57
+ * @lastupdate 07-12-2024 17:45
  */
 
 // 1. INCLUSIONE DIPENDENZE
@@ -105,7 +106,25 @@ if (!$EVOuserId || !$docid) {
             $output = $modx->getChunk($ToNotLoggedTpl);
         } else {
             // Usa il valore diretto (dal parametro o dal language file)
-            $output = $ToNotLoggedTpl;
+            $output = str_replace(
+                'class="btn btn-light disabled"',
+                'class="add-to-wishlist ' . $btnClass . '" 
+                data-docid="' . $docid . '" 
+                data-userid="' . $userId . '" 
+                data-user-tv="' . $userTv . '"
+                data-toggle="tooltip"
+                data-placement="top"
+                data-add-text="' . htmlspecialchars($btnAddText, ENT_QUOTES) . '"
+                data-already-text="' . htmlspecialchars($btnAlreadyText, ENT_QUOTES) . '"
+                data-add-alt="' . htmlspecialchars($btnAddAlt, ENT_QUOTES) . '"
+                data-already-alt="' . htmlspecialchars($btnAlreadyAlt, ENT_QUOTES) . '"
+                data-not-logged-alt="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
+                title="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
+                aria-label="' . htmlspecialchars($btnNotLoggedAlt, ENT_QUOTES) . '"
+                id="' . $buttonId . '"
+                disabled',
+                $ToNotLoggedTpl
+            );
         }
     }
 } else {
