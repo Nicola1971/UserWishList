@@ -8,7 +8,7 @@
  * @category  snippet
  * @version   2.6
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 13:22
+ * @lastupdate 07-12-2024 15:11
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -117,7 +117,7 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
             throw new Exception('' . $_UWLlang['wishList_is_empty'] . '');
         }
         // Ottieni i campi richiesti dai template, escludendo i campi calcolati
-        $calculatedFields = ['url', 'title', 'date', 'username']; // campi che aggiungeremo dopo
+        $calculatedFields = ['url', 'title', 'date', 'username']; 
         $requiredFields = array_unique(array_merge(['id', 'pagetitle'], $pdfFields, extractPlaceholders($pdfHeaderTpl), extractPlaceholders($pdfItemTpl)));
         // Rimuovi i campi calcolati dalla query
         $queryFields = array_diff($requiredFields, $calculatedFields);
@@ -194,8 +194,8 @@ try {
     $tvValues = \UserManager::getValues(['id' => $userId]);
     $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
     // Conteggio elementi
-    $totalItems = empty($userWishList) ? 0 : count(explode(',', $userWishList));
-    $modx->setPlaceholder('wishlist_total_items', $totalItems);
+	$totalItems = empty($userWishList) ? 0 : count(explode(',', $userWishList));
+	$modx->setPlaceholder('wishlist_total_items', '<span class="wishlist-total-items">'.$totalItems.'</span>');
     if (empty($userWishList)) {
         return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
@@ -246,7 +246,11 @@ try {
         if (counter) {
             counter.textContent = items.length;
         }
-        
+        // Aggiorna il placeholder wishlist_total_items
+    	const totalCounters = document.querySelectorAll(".wishlist-total-items");
+    	totalCounters.forEach(counter => {
+        counter.textContent = items.length;
+    	});
         if (items.length === 0) {
             document.querySelector(".wishlist-export")?.remove();
             document.querySelector(".wishlist-counter")?.remove();
