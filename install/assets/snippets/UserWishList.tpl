@@ -8,7 +8,7 @@
  * @category  snippet
  * @version   2.6
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 10:50
+ * @lastupdate 07-12-2024 13:22
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -101,7 +101,7 @@ $pdfHeaderTpl = isset($pdfHeaderTpl) ? $pdfHeaderTpl : '@CODE:
     <p>' . $_UWLlang['exported_on'] . ' [+date+]</p>';
 $pdfItemTpl = isset($pdfItemTpl) ? $pdfItemTpl : '@CODE:
     <h2>[+pagetitle+]</h2>
-    [+introtext:ifNotEmpty=`<p>[+introtext+]</p>`+]
+    [+summary+]</p>`
     [+url:ifNotEmpty=`<p>Link: [+url+]</p>`+]';
 // Gestione dell'esportazione
 if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
@@ -122,10 +122,8 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
         // Rimuovi i campi calcolati dalla query
         $queryFields = array_diff($requiredFields, $calculatedFields);
         // Prepara i parametri per DocLister
-        $params = array('documents' => $userWishList, 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => 'id,pagetitle,introtext', // Specifichiamo esplicitamente i campi
-        'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'api' => 'id,pagetitle,introtext', // Stessi campi in api
-        'debug' => 1, 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
-            // Genera il bottone per questo elemento
+        $params = array('documents' => $userWishList, 'tvList' => isset($tvList) ? $tvList : '', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'api' => 'id,pagetitle,introtext,content,description', 'summary' => 'notags,len:300', // Aggiungiamo questo
+        'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
             $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'notInText' => $btnNotInText, 'removeAlt' => $btnRemoveAlt, 'notInAlt' => $btnNotInAlt]);
             return $data;
         });
@@ -139,8 +137,8 @@ if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
             // Se servono per il PDF header
             $item['title'] = $pdfTitle;
             $item['username'] = $modx->getLoginUserName();
-            // Qui puoi aggiungere altri campi calcolati se necessario
-            
+            // Aggiungi il summary
+            $item['summary'] = !empty($item['introtext']) ? $item['introtext'] : mb_substr(strip_tags($item['content']), 0, 300);
         }
         switch ($format) {
             case 'pdf':
@@ -202,7 +200,7 @@ try {
         return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
     // Prepara i parametri per DocLister
-    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'selectFields' => isset($selectFields) ? $selectFields : 'id,pagetitle,introtext', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
+    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'summary' => isset($summary) ? $summary : 'notags,len:300', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt, $btnNotInText, $btnNotInAlt) {
         // Genera il bottone per questo elemento
         $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'notInText' => $btnNotInText, 'removeAlt' => $btnRemoveAlt, 'notInAlt' => $btnNotInAlt]);
         return $data;
