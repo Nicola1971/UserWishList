@@ -31,7 +31,7 @@ $_UWLlang['btnAddText'] = 'Aggiungi alla lista dei desideri';
 $_UWLlang['btnAddAlt'] = 'Aggiungi alla lista dei desideri';
 $_UWLlang['btnAlreadyText'] = 'Già in WishList';
 $_UWLlang['btnAlreadyAlt'] = 'Elemento già presente nella lista dei desideri';
-$_UWLlang['ToNotLoggedTpl'] = '<p class="text-muted">Effettua il login per aggiungere alla tua Lista dei desideri</p>';
+$_UWLlang['ToNotLoggedTpl'] = 'Effettua il login per aggiungere alla tua Lista dei desideri';
 $_UWLlang['btnNotLoggedAlt'] = 'Effettua il login per aggiungere alla lista dei desideri';
 $_UWLlang['add_to_wishList'] = 'Aggiungi alla lista dei desideri';
 $_UWLlang['added_to_wishList'] = 'Aggiunto alla Lista dei desideri';
