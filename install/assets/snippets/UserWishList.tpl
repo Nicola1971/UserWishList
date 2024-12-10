@@ -5,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.6.1
+ * @version   2.6.2
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 19:26
+ * @lastupdate 10-12-2024 09:56
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -51,24 +51,7 @@ if (!function_exists('UWL_generateRemoveButton')) {
         </button>";
     }
 }
-// Funzioni helper per il PDF
-function extractPlaceholders($tpl) {
-    preg_match_all('/\[\+([^:\+\]]+)/', $tpl, $matches);
-    return $matches[1];
-}
-function parsePlaceholders($tpl, $data) {
-    $tpl = str_replace('@CODE:', '', $tpl);
-    // Parser per condizionali semplici [+field:ifNotEmpty=`content`+]
-    $tpl = preg_replace_callback('/\[\+([^:\+\]]+):ifNotEmpty=`([^`]+)`\+\]/', function ($matches) use ($data) {
-        $field = $matches[1];
-        $content = $matches[2];
-        return !empty($data[$field]) ? $content : '';
-    }, $tpl);
-    foreach ($data as $key => $value) {
-        $tpl = str_replace('[+' . $key . '+]', $value, $tpl);
-    }
-    return $tpl;
-}
+
 $EVOuserId = evolutionCMS()->getLoginUserID();
 $userId = isset($userId) ? (string)$userId : $EVOuserId;
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
@@ -85,112 +68,14 @@ $btnRemoveClass = isset($btnRemoveClass) ? $btnRemoveClass : 'btn btn-danger';
 $btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : $_UWLlang['btnRemoveText'];
 $btnRemoveAlt = isset($btnRemoveAlt) ? $btnRemoveAlt : $_UWLlang['btnRemoveAlt'];
 $showCounter = isset($showCounter) ? (int)$showCounter : 0; // 1 = mostra, 0 = nascondi
-$exportFormats = isset($exportFormats) ? explode(',', $exportFormats) : ['pdf', 'csv'];
-$showExport = isset($showExport) ? (int)$showExport : 1; // 1 = mostra, 0 = nascondi
-// Parametri PDF
-$pdfFields = isset($pdfFields) ? explode(',', $pdfFields) : ['pagetitle', 'introtext', 'url'];
-$pdf_Title = $_UWLlang['pdf_title'];
-$pdfTitle = isset($pdfTitle) ? $pdfTitle : $pdf_Title;
-$pdfHeaderTpl = isset($pdfHeaderTpl) ? $pdfHeaderTpl : '@CODE: 
-    <h1>[+title+]</h1>
-    <p>' . $_UWLlang['exported_on'] . ' [+date+]</p></br>';
-$pdfItemTpl = isset($pdfItemTpl) ? $pdfItemTpl : '@CODE:
-    <h2>[+pagetitle+]</h2>
-    [+summary+]</p>
-    [+url:ifNotEmpty=`<p>Link: [+url+]</p>`+]';
-// Gestione dell'esportazione
-if (isset($_POST['export_wishlist']) && isset($_POST['format'])) {
-    try {
-        $format = $_POST['format'];
-        if (!in_array($format, $exportFormats)) {
-            throw new Exception('' . $_UWLlang['format_not_supported'] . '');
-        }
-        $modx->logEvent(0, 1, "Required Fields: " . print_r($requiredFields, true), 'WishList Export Debug - Fields');
-        $tvValues = \UserManager::getValues(['id' => $userId]);
-        $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
-        if (empty($userWishList)) {
-            throw new Exception('' . $_UWLlang['wishList_is_empty'] . '');
-        }
-        // Ottieni i campi richiesti dai template, escludendo i campi calcolati
-        $calculatedFields = ['url', 'title', 'date', 'username']; 
-        $requiredFields = array_unique(array_merge(['id', 'pagetitle'], $pdfFields, extractPlaceholders($pdfHeaderTpl), extractPlaceholders($pdfItemTpl)));
-        // Rimuovi i campi calcolati dalla query
-        $queryFields = array_diff($requiredFields, $calculatedFields);
-        // Prepara i parametri per DocLister
-        $params = array('documents' => $userWishList, 'tvList' => isset($tvList) ? $tvList : '', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'api' => 'id,pagetitle,introtext,content,description', 'summary' => 'notags,len:300', // Aggiungiamo questo
-        'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt) {
-            $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'removeAlt' => $btnRemoveAlt]);
-            return $data;
-        });
-        $docs = $modx->runSnippet('DocLister', $params);
-        $items = json_decode($docs, true);
-        // Aggiungi i campi calcolati dopo aver ottenuto i dati
-        foreach ($items as & $item) {
-            // Campi calcolati standard
-            $item['url'] = $modx->makeUrl($item['id'], '', '', 'full');
-            $item['date'] = date('d/m/Y H:i');
-            // Se servono per il PDF header
-            $item['title'] = $pdfTitle;
-            $item['username'] = $modx->getLoginUserName();
-            // Aggiungi il summary
-            $item['summary'] = !empty($item['introtext']) ? $item['introtext'] : mb_substr(strip_tags($item['content']), 0, 300);
-        }
-        switch ($format) {
-            case 'pdf':
-                require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/libs/tcpdf/tcpdf.php';
-                class WishListPDF extends TCPDF {
-                    public function Header() {
-                        $this->SetY(15);
-                    }
-                    public function Footer() {
-                        $this->SetY(-15);
-                        $this->SetFont('helvetica', 'I', 8);
-                        $this->Cell(0, 10, '' . $_UWLlang["page"] . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C');
-                    }
-                }
-                $pdf = new WishListPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-                $pdf->SetCreator(PDF_CREATOR);
-                $pdf->SetAuthor($modx->getLoginUserName());
-                $pdf->SetTitle($pdfTitle);
-                $pdf->SetFont('helvetica', '', 10);
-                $pdf->AddPage();
-                // Header
-                $headerHtml = parsePlaceholders($pdfHeaderTpl, ['title' => $pdfTitle, 'date' => date('d/m/Y H:i'), 'username' => $modx->getLoginUserName() ]);
-                $pdf->writeHTML($headerHtml);
-                // Items
-                foreach ($items as $item) {
-                    $itemHtml = parsePlaceholders($pdfItemTpl, $item);
-                    $pdf->writeHTML($itemHtml);
-                    $pdf->Ln(5);
-                }
-                $pdf->Output('wishlist.pdf', 'D');
-                exit;
-            break;
-            case 'csv':
-                header('Content-Type: text/csv; charset=utf-8');
-                header('Content-Disposition: attachment; filename=wishlist.csv');
-                $output = fopen('php://output', 'w');
-                fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
-                fputcsv($output, [$_UWLlang['title'], $_UWLlang['description'], $_UWLlang['URL']]);
-                foreach ($items as $item) {
-                    fputcsv($output, [$item['pagetitle'], $item['summary'], $modx->makeUrl($item['id'], '', '', 'full') ]);
-                }
-                fclose($output);
-                exit;
-            break;
-        }
-    }
-    catch(Exception $e) {
-        return '' . $_UWLlang['export_error'] . ': ' . $e->getMessage();
-    }
-}
+
 // Visualizzazione normale della lista
 try {
     $tvValues = \UserManager::getValues(['id' => $userId]);
     $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
     // Conteggio elementi
-	$totalItems = empty($userWishList) ? 0 : count(explode(',', $userWishList));
-	$modx->setPlaceholder('wishlist_total_items', '<span class="wishlist-total-items">'.$totalItems.'</span>');
+    $totalItems = empty($userWishList) ? 0 : count(explode(',', $userWishList));
+    $modx->setPlaceholder('wishlist_total_items', '<span class="wishlist-total-items">'.$totalItems.'</span>');
     if (empty($userWishList)) {
         return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
@@ -200,25 +85,7 @@ try {
         $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'removeAlt' => $btnRemoveAlt]);
         return $data;
     });
-    // Form di esportazione
-    $exportForm = '';
-    if ($showExport) {
-        $exportForm = '
-        <div class="container">
-            <div class="wishlist-export mb-4">
-                <form method="post" class="d-flex gap-2 align-items-center">
-                    <select name="format" class="form-select form-control" style="width: auto;">
-                        ' . ($exportFormats ? implode('', array_map(function ($format) {
-            return '<option value="' . $format . '">' . strtoupper($format) . '</option>';
-        }, $exportFormats)) : '') . '
-                    </select>
-                    <button type="submit" name="export_wishlist" class="ml-2 btn btn-primary">
-                        ' . $_UWLlang['export_wishList'] . '
-                    </button>
-                </form>
-            </div>
-        </div>';
-    }
+
     // Counter
     $counter = '';
     if ($showCounter) {
@@ -247,7 +114,6 @@ try {
         counter.textContent = items.length;
     	});
         if (items.length === 0) {
-            document.querySelector(".wishlist-export")?.remove();
             document.querySelector(".wishlist-counter")?.remove();
             const container = document.querySelector(".wishlist-container");
             if (container) {
@@ -341,7 +207,7 @@ try {
         }
         $modx->regClientScript($script);
     }
-    return $counter . $exportForm . '<div class="' . $outerClass . ' wishlist-container">' . $output . '</div>';
+    return $counter . '<div class="' . $outerClass . ' wishlist-container">' . $output . '</div>';
 }
 catch(\Exception $e) {
     return '' . $_UWLlang['error'] . ': ' . $e->getMessage();
