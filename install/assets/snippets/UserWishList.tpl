@@ -5,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.6.2
+ * @version   2.6.3
  * @internal  @modx_category UserWishList
- * @lastupdate 10-12-2024 10:41
+ * @lastupdate 10-12-2024 19:32
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -70,14 +70,15 @@ $btnRemoveAlt = isset($btnRemoveAlt) ? $btnRemoveAlt : $_UWLlang['btnRemoveAlt']
 $showCounter = isset($showCounter) ? (int)$showCounter : 0; // 1 = mostra, 0 = nascondi
 
 // Parametri per le notifiche Toast
-$toastErrorBg = isset($toastErrorBg) ? $toastErrorBg : 'to right, #ff5f6d, #ffc371';
-$toastErrorGrav = isset($toastErrorGrav) ? $toastErrorGrav : 'bottom';
-$toastErrorPos = isset($toastErrorPos) ? $toastErrorPos : 'left';
+$toastClose = isset($toastClose) ? $toastClose : 'true';
+$toastErrorBg = isset($toastErrorBg) ? $toastErrorBg : 'linear-gradient(to right, #ff5f6d, #ffc371)';
+$toastErrorGrav = isset($toastErrorGrav) ? $toastErrorGrav : 'top';
+$toastErrorPos = isset($toastErrorPos) ? $toastErrorPos : 'center';
 $toastErrorDur = isset($toastErrorDur) ? $toastErrorDur : '3000';
 
-$toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'to right, #00b09b, #96c93d';
-$toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'bottom';
-$toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'left';
+$toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'linear-gradient(to right, #00b09b, #96c93d)';
+$toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'top';
+$toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'center';
 $toastSuccessDur = isset($toastSuccessDur) ? $toastSuccessDur : '3000';
 
 // Visualizzazione della lista
@@ -168,10 +169,11 @@ try {
                     Toastify({
                         text: wishlistMessages.removed,
                         duration: ' . $toastSuccessDur . ',
+						close: ' . $toastClose . ',
             			gravity: "' . $toastSuccessGrav . '",
             			position: "' . $toastSuccessPos . '",
                         style: {
-                            background: "linear-gradient(' . $toastSuccessBg . ')",
+                            background: "' . $toastSuccessBg . '"
                         }
                     }).showToast();
                 }
@@ -181,10 +183,11 @@ try {
                         text: wishlistMessages.error,
                         text: wishlistMessages.error,
             			duration: ' . $toastErrorDur . ',
+						close: ' . $toastClose . ',
             			gravity: "' . $toastErrorGrav . '",
             			position: "' . $toastErrorPos . '",
                         style: {
-                            background: "linear-gradient(' . $toastErrorBg . ')",
+                            background: "' . $toastErrorBg . '"
                         }
                     }).showToast();
                 }
@@ -195,10 +198,11 @@ try {
                 Toastify({
                     text: wishlistMessages.error,
                     duration: ' . $toastErrorDur . ',
+					close: ' . $toastClose . ',
         			gravity: "' . $toastErrorGrav . '",
         			position: "' . $toastErrorPos . '",
                     style: {
-                        background: "linear-gradient(' . $toastErrorBg . ')",
+                        background: "' . $toastErrorBg . '"
                         }
                 }).showToast();
             }

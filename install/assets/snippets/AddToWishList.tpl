@@ -5,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.8.6
+ * @version   2.8.7
  * @internal  @modx_category UserWishList
- * @lastupdate 10-12-2024 10:41
+ * @lastupdate 10-12-2024 19:37
  */
 // 1. INCLUSIONE DIPENDENZE
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
@@ -72,13 +72,14 @@ $showCounter = isset($showCounter) ? (int)$showCounter : 1;
 $counterTpl = isset($counterTpl) ? $counterTpl : '<span class="wishlist-count-[+docid+] wishlist-counter ms-2">' . sprintf($_UWLlang['counter_format'], '[+count+]') . '</span>';
 $loadToastify = isset($loadToastify) ? (int)$loadToastify : 1;
 // Parametri per le notifiche Toast
-$toastErrorBg = isset($toastErrorBg) ? $toastErrorBg : 'to right, #ff5f6d, #ffc371';
-$toastErrorGrav = isset($toastErrorGrav) ? $toastErrorGrav : 'bottom';
-$toastErrorPos = isset($toastErrorPos) ? $toastErrorPos : 'left';
+$toastClose = isset($toastClose) ? $toastClose : 'true';
+$toastErrorBg = isset($toastErrorBg) ? $toastErrorBg : 'linear-gradient(to right, #ff5f6d, #ffc371)';
+$toastErrorGrav = isset($toastErrorGrav) ? $toastErrorGrav : 'top';
+$toastErrorPos = isset($toastErrorPos) ? $toastErrorPos : 'center';
 $toastErrorDur = isset($toastErrorDur) ? $toastErrorDur : '3000';
-$toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'to right, #00b09b, #96c93d';
-$toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'bottom';
-$toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'left';
+$toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'linear-gradient(to right, #00b09b, #96c93d)';
+$toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'top';
+$toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'center';
 $toastSuccessDur = isset($toastSuccessDur) ? $toastSuccessDur : '3000';
 // Genera un ID unico per il bottone
 $buttonId = ($docid == $modx->documentIdentifier) ? "wishlist-button-main-" . $docid : "wishlist-button-remote-" . $docid;
@@ -198,20 +199,22 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
     Toastify({
         text: data.message,
         duration: ' . $toastSuccessDur . ',
+		close: ' . $toastClose . ',
         gravity: "' . $toastSuccessGrav . '",
         position: "' . $toastSuccessPos . '",
         style: {
-            background: "linear-gradient(' . $toastSuccessBg . ')",
+            background: "' . $toastSuccessBg . '"
         }
     }).showToast();
 } else {
     Toastify({
         text: data.message || wishlistMessages.error,
         duration: ' . $toastErrorDur . ',
+		close: ' . $toastClose . ',
         gravity: "' . $toastErrorGrav . '",
         position: "' . $toastErrorPos . '",
         style: {
-            background: "linear-gradient(' . $toastErrorBg . ')",
+            background: "' . $toastErrorBg . '"
         }
     }).showToast();
 }
@@ -220,10 +223,11 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
     Toastify({
         text: wishlistMessages.error,
         duration: ' . $toastErrorDur . ',
+		close: ' . $toastClose . ',
         gravity: "' . $toastErrorGrav . '",
         position: "' . $toastErrorPos . '",
         style: {
-            background: "linear-gradient(' . $toastErrorBg . ')",
+            background: "' . $toastErrorBg . '"
         }
     }).showToast();
 }
