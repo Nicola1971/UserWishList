@@ -11,41 +11,28 @@
 //
 
 //UserWishList
-$_UWLlang['exported_on'] = 'Geëxporteerd op';
-$_UWLlang['format_not_supported'] = 'Formaat niet ondersteund';
-$_UWLlang['wishList_is_empty'] = 'Verlanglijst is leeg';
+$_UWLlang['wishList_is_empty'] = 'Verlanglijstje is leeg';
 $_UWLlang['deleted'] = 'verwijderd';
-$_UWLlang['pdf_title'] = 'Mijn Verlanglijst';
-$_UWLlang['export_error'] = 'Fout bij exporteren';
 $_UWLlang['error'] = 'Fout';
-$_UWLlang['page'] = 'Pagina';
-$_UWLlang['title'] = 'Titel';
-$_UWLlang['description'] = 'Omschrijving';
 $_UWLlang['URL'] = 'URL';
-$_UWLlang['your_wishList_is_empty'] = 'Je verlanglijst is leeg';
-$_UWLlang['export_wishList'] = 'Exporteer Verlanglijst';
+$_UWLlang['your_wishList_is_empty'] = 'Jouw verlanglijstje is leeg';
 $_UWLlang['saved_elements'] = 'Opgeslagen elementen';
-
-//AddToWishList
-$_UWLlang['btnAddText'] = 'Toevoegen aan verlanglijst';
-$_UWLlang['btnAddAlt'] = 'Toevoegen aan verlanglijst';
-$_UWLlang['btnAlreadyText'] = 'Al in verlanglijst';
-$_UWLlang['btnAlreadyAlt'] = 'Item staat al in verlanglijst';
-$_UWLlang['ToNotLoggedTpl'] = '<p class="text-muted">Log in om toe te voegen aan verlanglijst</p>';
-$_UWLlang['btnNotLoggedAlt'] = 'Log in om toe te voegen aan verlanglijst';
-$_UWLlang['add_to_wishList'] = 'Toevoegen aan verlanglijst';
-$_UWLlang['added_to_wishList'] = 'Toegevoegd aan verlanglijst';
-$_UWLlang['already_in_wishList'] = 'Al in verlanglijst';
-$_UWLlang['counter_format'] = '%d gebruikers hebben dit bekeken';
-$_UWLlang['toast_success'] = 'Toegevoegd aan verlanglijstje';
-$_UWLlang['toast_error'] = 'Fout bij toevoegen aan verlanglijstje';
-$_UWLlang['counter_update_error'] = 'Fout bij het bijwerken van de tellers';
-
-//RemoveFromWishList
-$_UWLlang['btnRemoveText'] = 'Verwijderen uit verlanglijst';
-$_UWLlang['btnNotInText'] = 'Niet in verlanglijst';
-$_UWLlang['removed_from_wishList'] = 'Verwijderd uit verlanglijst';
+$_UWLlang['btnRemoveText'] = 'Verwijderen uit verlanglijstje';
+$_UWLlang['removed_from_wishList'] = 'Verwijderd uit verlanglijstje';
 $_UWLlang['btnRemoveAlt'] = 'Verwijderen uit verlanglijstje';
-
-//MostWished
-$_UWLlang['tv_notfound'] = 'Templatevariabele niet gevonden';
+// AddToWishList
+$_UWLlang['btnAddText'] = 'Toevoegen aan verlanglijstje';
+$_UWLlang['btnAddAlt'] = 'Toevoegen aan verlanglijstje';
+$_UWLlang['btnAlreadyText'] = 'Al in verlanglijstje';
+$_UWLlang['btnAlreadyAlt'] = 'Item al in verlanglijstje';
+$_UWLlang['ToNotLoggedTpl'] = 'Log in om toe te voegen aan je verlanglijstje';
+$_UWLlang['btnNotLoggedAlt'] = 'Log in om toe te voegen aan verlanglijstje';
+$_UWLlang['add_to_wishList'] = 'Toevoegen aan verlanglijstje';
+$_UWLlang['added_to_wishList'] = 'Toegevoegd aan verlanglijstje';
+$_UWLlang['already_in_wishList'] = 'Al in verlanglijstje';
+$_UWLlang['counter_format'] = 'Bekeken door %d gebruikers';
+$_UWLlang['toast_success'] = 'Toegevoegd aan verlanglijstje';
+$_UWLlang['toast_error'] = 'Fout bij toevoegen';
+$_UWLlang['counter_update_error'] = 'Fout bij bijwerken tellers';
+// MostWished
+$_UWLlang['tv_notfound'] = 'Sjabloonvariabele niet gevonden';
