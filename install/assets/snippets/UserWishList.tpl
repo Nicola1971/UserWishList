@@ -7,7 +7,7 @@
  * @category  snippet
  * @version   2.6.2
  * @internal  @modx_category UserWishList
- * @lastupdate 10-12-2024 09:56
+ * @lastupdate 10-12-2024 10:41
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -69,7 +69,18 @@ $btnRemoveText = isset($btnRemoveText) ? $btnRemoveText : $_UWLlang['btnRemoveTe
 $btnRemoveAlt = isset($btnRemoveAlt) ? $btnRemoveAlt : $_UWLlang['btnRemoveAlt'];
 $showCounter = isset($showCounter) ? (int)$showCounter : 0; // 1 = mostra, 0 = nascondi
 
-// Visualizzazione normale della lista
+// Parametri per le notifiche Toast
+$toastErrorBg = isset($toastErrorBg) ? $toastErrorBg : 'to right, #ff5f6d, #ffc371';
+$toastErrorGrav = isset($toastErrorGrav) ? $toastErrorGrav : 'bottom';
+$toastErrorPos = isset($toastErrorPos) ? $toastErrorPos : 'left';
+$toastErrorDur = isset($toastErrorDur) ? $toastErrorDur : '3000';
+
+$toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'to right, #00b09b, #96c93d';
+$toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'bottom';
+$toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'left';
+$toastSuccessDur = isset($toastSuccessDur) ? $toastSuccessDur : '3000';
+
+// Visualizzazione della lista
 try {
     $tvValues = \UserManager::getValues(['id' => $userId]);
     $userWishList = isset($tvValues[$userTv]) ? $tvValues[$userTv] : '';
@@ -156,11 +167,11 @@ try {
                 if (typeof Toastify !== "undefined") {
                     Toastify({
                         text: wishlistMessages.removed,
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: "left",
+                        duration: ' . $toastSuccessDur . ',
+            			gravity: "' . $toastSuccessGrav . '",
+            			position: "' . $toastSuccessPos . '",
                         style: {
-                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                            background: "linear-gradient(' . $toastSuccessBg . ')",
                         }
                     }).showToast();
                 }
@@ -168,11 +179,12 @@ try {
                 if (typeof Toastify !== "undefined") {
                     Toastify({
                         text: wishlistMessages.error,
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: "left",
+                        text: wishlistMessages.error,
+            			duration: ' . $toastErrorDur . ',
+            			gravity: "' . $toastErrorGrav . '",
+            			position: "' . $toastErrorPos . '",
                         style: {
-                            background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                            background: "linear-gradient(' . $toastErrorBg . ')",
                         }
                     }).showToast();
                 }
@@ -182,12 +194,12 @@ try {
             if (typeof Toastify !== "undefined") {
                 Toastify({
                     text: wishlistMessages.error,
-                    duration: 3000,
-                    gravity: "bottom",
-                    position: "left",
+                    duration: ' . $toastErrorDur . ',
+        			gravity: "' . $toastErrorGrav . '",
+        			position: "' . $toastErrorPos . '",
                     style: {
-                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    }
+                        background: "linear-gradient(' . $toastErrorBg . ')",
+                        }
                 }).showToast();
             }
         }
