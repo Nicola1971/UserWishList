@@ -5,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.6.3
+ * @version   1.6.4
  * @internal  @modx_category UserWishList
- * @lastupdate 07-12-2024 20:10
+ * @lastupdate 17-12-2024 19:30
  */
 
 //Language
@@ -41,9 +41,10 @@ if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . 
 $userTv = isset($userTv) ? (string)$userTv : 'UserWishList';
 $limit = isset($limit) ? (int)$limit : 10;
 
-// Template predefinito
+// Template predefinito con nuovo placeholder [+iteration+]
 $tpl = isset($tpl) ? $tpl : '@CODE:
     <div class="most-wished-item">
+        <span class="position">#[+iteration+]</span>
         <h3>[+pagetitle+]</h3>
         <p>[+summary+]</p>
         <span class="badge bg-info">Salvato da [+wishlist_count+] utenti</span>
@@ -127,7 +128,9 @@ try {
         }
 
         if (is_array($items)) {
+            $iteration = 0; // Inizializzazione contatore
             foreach ($items as $item) {
+                $iteration++; // Incremento contatore
                 $count = $docCounts[$item['id']]??0;
                 
                 // Gestione template
@@ -137,14 +140,15 @@ try {
                     $itemTemplate = $modx->getChunk($tpl);
                 }
                 
-                // Preparazione placeholder
+                // Preparazione placeholder con aggiunta di [+iteration+]
                 $replacements = array(
                     '[+id+]' => $item['id'],
                     '[+pagetitle+]' => $item['pagetitle'],
                     '[+title+]' => $item['title'],
                     '[+introtext+]' => $item['introtext'],
                     '[+wishlist_count+]' => $count,
-                    '[+summary+]' => $item['summary']
+                    '[+summary+]' => $item['summary'],
+                    '[+iteration+]' => $iteration // Nuovo placeholder per l'iterazione
                 );
 
                 // Gestione TV aggiuntive
