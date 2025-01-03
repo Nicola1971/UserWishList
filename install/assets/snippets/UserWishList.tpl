@@ -1,3 +1,4 @@
+<?php
 /**
  * UserWishList
  *
@@ -5,9 +6,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.6.3
+ * @version   2.6.4
  * @internal  @modx_category UserWishList
- * @lastupdate 10-12-2024 19:32
+ * @lastupdate 03-01-2025 17:49
  */
 //Language
 // Sanitizzazione input e cast a string
@@ -75,7 +76,6 @@ $toastErrorBg = isset($toastErrorBg) ? $toastErrorBg : 'linear-gradient(to right
 $toastErrorGrav = isset($toastErrorGrav) ? $toastErrorGrav : 'top';
 $toastErrorPos = isset($toastErrorPos) ? $toastErrorPos : 'center';
 $toastErrorDur = isset($toastErrorDur) ? $toastErrorDur : '3000';
-
 $toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'linear-gradient(to right, #00b09b, #96c93d)';
 $toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'top';
 $toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'center';
@@ -92,7 +92,7 @@ try {
         return '<p>' . $_UWLlang['your_wishList_is_empty'] . '</p>';
     }
     // Prepara i parametri per DocLister
-    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'summary' => isset($summary) ? $summary : 'notags,len:300', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt) {
+    $params = array('documents' => $userWishList, 'tpl' => $tpl, 'tvPrefix' => '', 'tvList' => isset($tvList) ? $tvList : '', 'summary' => isset($summary) ? $summary : 'notags,len:300', 'orderBy' => isset($orderBy) ? $orderBy : 'pagetitle ASC', 'tvSortType' => isset($tvSortType) ? $tvSortType : 'UNSIGNED', 'prepare' => function ($data, $modx, $DL) use ($userId, $userTv, $btnRemoveClass, $btnRemoveText, $btnRemoveAlt) {
         // Genera il bottone per questo elemento
         $data['wishlist_remove_button'] = UWL_generateRemoveButton(['docid' => $data['id'], 'userId' => $userId, 'userTv' => $userTv, 'btnClass' => $btnRemoveClass, 'removeText' => $btnRemoveText, 'removeAlt' => $btnRemoveAlt]);
         return $data;
