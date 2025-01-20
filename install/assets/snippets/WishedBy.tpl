@@ -1,3 +1,4 @@
+//<?php
 /**
  * WishedBy
  *
@@ -5,9 +6,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   1.1
+ * @version   1.2
  * @internal  @modx_category UserWishList
- * @lastupdate 02-12-2024 19:30
+ * @lastupdate 20-01-2025 18:18
  */
 
 // Parameters
@@ -15,6 +16,7 @@ $docid = isset($docid) ? $docid : $modx->documentIdentifier;
 $display = isset($display) ? (int) $display : 10;
 $tpl = isset($tpl) ? $tpl : "";
 $outerTpl = isset($outerTpl) ? $outerTpl : "";
+$noneTPL = isset($noneTPL) ? $noneTPL : "";
 $userTv = isset($userTv) ? (string) $userTv : "UserWishList";
 $privateWishTv = isset($privateWishTv)
     ? (string) $privateWishTv
@@ -133,9 +135,11 @@ function parseTemplate($modx, $tpl, $placeholders)
 }
 
 if (empty($output)) {
+    if (!empty($noneTPL)) {
+        return parseTemplate($modx, $noneTPL, []);
+    }
     return "";
 }
-
 return parseTemplate($modx, $outerTpl, [
     "total" => $totalVisible,
     "visible" => $shownUsers,
