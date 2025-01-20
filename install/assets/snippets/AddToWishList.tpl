@@ -5,9 +5,9 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category  snippet
- * @version   2.8.7
+ * @version   2.8.8
  * @internal  @modx_category UserWishList
- * @lastupdate 10-12-2024 19:37
+ * @lastupdate 20-01-2025 16:47
  */
 // 1. INCLUSIONE DIPENDENZE
 require_once MODX_BASE_PATH . 'assets/snippets/UserWishList/includes/functions.php';
@@ -80,7 +80,9 @@ $toastErrorDur = isset($toastErrorDur) ? $toastErrorDur : '3000';
 $toastSuccessBg = isset($toastSuccessBg) ? $toastSuccessBg : 'linear-gradient(to right, #00b09b, #96c93d)';
 $toastSuccessGrav = isset($toastSuccessGrav) ? $toastSuccessGrav : 'top';
 $toastSuccessPos = isset($toastSuccessPos) ? $toastSuccessPos : 'center';
-$toastSuccessDur = isset($toastSuccessDur) ? $toastSuccessDur : '3000';
+$toastSuccessDur = isset($toastSuccessDur) ? $toastSuccessDur : '5000';
+$WishListId = isset($WishListId) ? (int)$WishListId : '';
+$added_msg = isset($added_msg) ? $added_msg : $_UWLlang['added_to_wishList'];
 // Genera un ID unico per il bottone
 $buttonId = ($docid == $modx->documentIdentifier) ? "wishlist-button-main-" . $docid : "wishlist-button-remote-" . $docid;
 // Conteggio elementi
@@ -130,7 +132,7 @@ if (!$EVOuserId || !$docid) {
 // 6. GESTIONE JAVASCRIPT
 if (!defined('WISHLIST_SCRIPT_LOADED')) {
     define('WISHLIST_SCRIPT_LOADED', true);
-    $wishlistTranslations = json_encode(['error' => $_UWLlang['toast_error'], 'counterUpdateError' => $_UWLlang['counter_update_error'], 'added' => $_UWLlang['added_to_wishList'], 'alreadyInList' => $_UWLlang['already_in_wishList']]);
+    $wishlistTranslations = json_encode(['error' => $_UWLlang['toast_error'], 'counterUpdateError' => $_UWLlang['counter_update_error'], 'added' => $added_msg, 'alreadyInList' => $_UWLlang['already_in_wishList']]);
     $scriptoutput = '';
     if ($loadToastify) {
         $scriptoutput.= '
@@ -188,7 +190,8 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
                         docid: button.dataset.docid,
                         userId: button.dataset.userid,
                         userTv: button.dataset.userTv,
-                        customLang: customLang
+                        customLang: customLang,
+    					added_msg: "' . addslashes($added_msg) . '"
                     })
                 });
                 
@@ -197,15 +200,23 @@ if (!defined('WISHLIST_SCRIPT_LOADED')) {
     updateWishlistCounts(data.docid);
     
     Toastify({
-        text: data.message,
-        duration: ' . $toastSuccessDur . ',
-		close: ' . $toastClose . ',
-        gravity: "' . $toastSuccessGrav . '",
-        position: "' . $toastSuccessPos . '",
-        style: {
-            background: "' . $toastSuccessBg . '"
-        }
-    }).showToast();
+    	text: data.message,
+    	duration: ' . $toastSuccessDur . ',
+    	close: ' . $toastClose . ',
+    	gravity: "' . $toastSuccessGrav . '",
+    	position: "' . $toastSuccessPos . '",
+    	' . (!empty($WishListId) ? '
+    	onClick: function(){
+        	window.location.href = "[~' . $WishListId . '~]";
+    	},
+    	style: {
+        	background: "' . $toastSuccessBg . '",
+        	cursor: "pointer"
+    	}' : '
+    	style: {
+        background: "' . $toastSuccessBg . '"
+    	}') . '
+	}).showToast();
 } else {
     Toastify({
         text: data.message || wishlistMessages.error,

@@ -31,7 +31,7 @@ if ($customLang !== '' && file_exists($langBasePath . 'custom/' . $customLang . 
         include ($langBasePath . $managerLang . '.php');
     }
 }
-
+$added_msg = isset($_POST['added_msg']) && !empty($_POST['added_msg']) ? (string)$_POST['added_msg'] : $_UWLlang['added_to_wishList'];
 $evo = evolutionCMS();
 $evo->db->connect();
 header('Content-Type: application/json');
@@ -87,7 +87,7 @@ if (isset($_POST['add_to_wishlist'])) {
             echo json_encode([
                 'success' => true,
                 'docid' => $docid,
-                'message' => $_UWLlang['added_to_wishList'],
+                'message' => $added_msg,
                 'count' => $count,
                 'formatted_count' => sprintf($_UWLlang['counter_format'], $count)
             ]);
