@@ -47,7 +47,7 @@ if (isset($_POST['get_wishlist_count'])) {
         'success' => true,
         'count' => $count,
         'docid' => $docid,
-        'formatted_count' => sprintf($_UWLlang['counter_format'], $count),
+        'formatted_count' => $count,
         'alreadyText' => $_UWLlang['btnAlreadyText']
     ]);
     exit();
@@ -101,7 +101,7 @@ if (isset($_POST['add_to_wishlist'])) {
             'docid' => $docid,
             'message' => $_UWLlang['already_in_wishList'],
             'count' => $count,
-            'formatted_count' => sprintf($_UWLlang['counter_format'], $count)
+            'formatted_count' => $count
         ]);
         exit();
         
